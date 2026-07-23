@@ -281,6 +281,11 @@
 		C15300000000000000000005 /* KanbanCardEditorStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15300000000000000000006 /* KanbanCardEditorStateTests.swift */; };
 		C15400000000000000000005 /* KanbanCardDetailStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15400000000000000000006 /* KanbanCardDetailStateTests.swift */; };
 		9B553A687840E7837FE8E0DE /* OneVoiceOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014B83CDF189F173113E95DA /* OneVoiceOverlayView.swift */; };
+		F0FF06D20C4F4A709CB053A8 /* OneSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CAA18B9959948DD9E3340B5 /* OneSecrets.swift */; };
+		2D6135C8A50145EA9A149FAB /* OneConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A03BBB6D22408C9372D6C9 /* OneConfig.swift */; };
+		D11D24B1900C4FC9AD610CF1 /* OneGeminiLiveClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94345AF185794045999C608A /* OneGeminiLiveClient.swift */; };
+		3CB1E8F307FD40F28D02ABDA /* OneAudioController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DBB7885ADC44029A6718330 /* OneAudioController.swift */; };
+		E6423DA4C2BC43D9982AB49D /* OneVoiceSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78FC5BB89F514545A979D8BA /* OneVoiceSessionViewModel.swift */; };
 		C21300000000000000000007 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = C21300000000000000000008 /* MarkdownUI */; };
 		B5A220000000000000000005 /* ChatMarkerMessageClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A220000000000000000006 /* ChatMarkerMessageClassifierTests.swift */; };
 		B5A100000000000000000004 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B5A100000000000000000014 /* PrivacyInfo.xcprivacy */; };
@@ -644,6 +649,11 @@
 		C15300000000000000000006 /* KanbanCardEditorStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanbanCardEditorStateTests.swift; sourceTree = "<group>"; };
 		C15400000000000000000006 /* KanbanCardDetailStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanbanCardDetailStateTests.swift; sourceTree = "<group>"; };
 		014B83CDF189F173113E95DA /* OneVoiceOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneVoiceOverlayView.swift; sourceTree = "<group>"; };
+		5CAA18B9959948DD9E3340B5 /* OneSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneSecrets.swift; sourceTree = "<group>"; };
+		23A03BBB6D22408C9372D6C9 /* OneConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneConfig.swift; sourceTree = "<group>"; };
+		94345AF185794045999C608A /* OneGeminiLiveClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneGeminiLiveClient.swift; sourceTree = "<group>"; };
+		6DBB7885ADC44029A6718330 /* OneAudioController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneAudioController.swift; sourceTree = "<group>"; };
+		78FC5BB89F514545A979D8BA /* OneVoiceSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneVoiceSessionViewModel.swift; sourceTree = "<group>"; };
 		B5A220000000000000000006 /* ChatMarkerMessageClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMarkerMessageClassifierTests.swift; sourceTree = "<group>"; };
 		B5A100000000000000000017 /* HermesShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HermesShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A04500000000000000000010 /* AgentRunActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRunActivityAttributes.swift; sourceTree = "<group>"; };
@@ -975,6 +985,11 @@
 			isa = PBXGroup;
 			children = (
 				014B83CDF189F173113E95DA /* OneVoiceOverlayView.swift */,
+				5CAA18B9959948DD9E3340B5 /* OneSecrets.swift */,
+				23A03BBB6D22408C9372D6C9 /* OneConfig.swift */,
+				94345AF185794045999C608A /* OneGeminiLiveClient.swift */,
+				6DBB7885ADC44029A6718330 /* OneAudioController.swift */,
+				78FC5BB89F514545A979D8BA /* OneVoiceSessionViewModel.swift */,
 			);
 			path = One;
 			sourceTree = "<group>";
@@ -1626,6 +1641,11 @@
 				B5A100000000000000000001 /* SharedDraftStore.swift in Sources */,
 				B5A100000000000000000008 /* ShareInputReader.swift in Sources */,
 				9B553A687840E7837FE8E0DE /* OneVoiceOverlayView.swift in Sources */,
+				F0FF06D20C4F4A709CB053A8 /* OneSecrets.swift in Sources */,
+				2D6135C8A50145EA9A149FAB /* OneConfig.swift in Sources */,
+				D11D24B1900C4FC9AD610CF1 /* OneGeminiLiveClient.swift in Sources */,
+				3CB1E8F307FD40F28D02ABDA /* OneAudioController.swift in Sources */,
+				E6423DA4C2BC43D9982AB49D /* OneVoiceSessionViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

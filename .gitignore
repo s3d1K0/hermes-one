@@ -18,6 +18,7 @@ Package.resolved
 .env
 .env.local
 .env.*.local
+HermesMobile/Features/One/OneSecrets.swift
 
 # Per-machine signing overrides (see CONTRIBUTING.md)
 Config/Local.xcconfig
