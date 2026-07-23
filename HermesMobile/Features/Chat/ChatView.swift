@@ -321,6 +321,7 @@ struct ChatView: View {
     @State private var activeStreamStatusRefreshTask: Task<Void, Never>?
     @State private var initialAttachments: [SharedAttachmentImport]
     @State private var didUploadInitialAttachments = false
+    @State private var showOne = false
 
     init(
         session: SessionSummary,
@@ -401,6 +402,9 @@ struct ChatView: View {
             },
             onSendVoiceNote: { data, filename in
                 Task { await sendVoiceNote(audioData: data, filename: filename) }
+            },
+            onStartOne: {
+                showOne = true
             },
             onCancel: {
                 Task { await cancelStream() }
@@ -662,6 +666,9 @@ struct ChatView: View {
             }
             .fullScreenCover(item: $selectableResponseText) { selectableText in
                 SelectableResponseTextView(selection: selectableText)
+            }
+            .fullScreenCover(isPresented: $showOne) {
+                OneVoiceOverlayView(onClose: { showOne = false })
             }
             .sheet(item: $attachmentPreviewItem) { item in
                 ChatAttachmentPreviewView(

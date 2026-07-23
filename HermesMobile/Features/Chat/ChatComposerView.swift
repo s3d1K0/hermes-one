@@ -113,6 +113,7 @@ struct MessageComposerView: View {
     let uploadAttachmentErrorMessage: String?
     let onSend: () -> Void
     let onSendVoiceNote: (Data, String) -> Void
+    var onStartOne: () -> Void = {}
     let onCancel: () -> Void
     let onSelectModel: (ModelCatalogOption) -> Void
     let onModelPickerOpen: () async -> Void
@@ -345,6 +346,12 @@ struct MessageComposerView: View {
                                 finishVoiceNote(translationHeight: height)
                             }
                         )
+
+                        Button(action: onStartOne) {
+                            Image(systemName: "waveform.circle").font(.system(size: 22))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Parler à One")
 
                         Button(action: actionButtonTapped) {
                             actionButtonLabel
