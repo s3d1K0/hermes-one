@@ -66,7 +66,8 @@ enum OneSettings {
         set { defaults.set(newValue, forKey: speakerOutputEnabledKey) }
     }
 
-    /// Reserve pour le pipeline video (pas encore porte dans ce module, cf. OneConfig).
+    /// Active l'envoi video (lunettes -> Gemini) pendant une session vocale, via
+    /// OneVideoController (cf. OneVoiceSessionViewModel.start()).
     static var videoStreamingEnabled: Bool {
         get { defaults.object(forKey: videoStreamingEnabledKey) as? Bool ?? true }
         set { defaults.set(newValue, forKey: videoStreamingEnabledKey) }

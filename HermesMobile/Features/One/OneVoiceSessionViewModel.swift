@@ -23,6 +23,10 @@ final class OneVoiceSessionViewModel {
     private let client = OneGeminiLiveClient()
     private let audio = OneAudioController()
     private let voiceFeedback = OneVoiceFeedback()
+    // Video lunettes (Meta Wearables DAT SDK) -> Gemini, portee depuis VisionClaw's
+    // StreamSessionViewModel ; active seulement si OneSettings.videoStreamingEnabled.
+    private let wearablesController = OneWearablesController()
+    private let videoController: OneVideoController
     // [Push proactif] Canal d'evenements du gateway Hermes (heartbeat/cron),
     // porte depuis VisionClaw's GeminiSessionViewModel (eventClient + deliverProactive).
     private let eventClient = OneEventClient()
@@ -38,6 +42,7 @@ final class OneVoiceSessionViewModel {
 
     init() {
         toolCallRouter = OneToolCallRouter(bridge: hermesBridge)
+        videoController = OneVideoController(wearables: wearablesController.wearables)
     }
 
     deinit {
@@ -91,6 +96,7 @@ final class OneVoiceSessionViewModel {
 
         phase = .listening
         connectProactiveChannelIfNeeded()
+        startVideoIfEnabled()
     }
 
     func stop() {
@@ -98,6 +104,8 @@ final class OneVoiceSessionViewModel {
         toolCallRouter.cancelAll()
         client.disconnect()
         audio.stopCapture()
+        videoController.onVideoFrame = nil
+        videoController.stop()
         phase = .idle
 
         guard wasActive else {
@@ -190,6 +198,20 @@ final class OneVoiceSessionViewModel {
         client.onToolCallCancellation = { [weak self] cancellation in
             self?.toolCallRouter.cancelToolCalls(ids: cancellation.ids)
         }
+    }
+
+    // MARK: - Video lunettes (Meta Wearables DAT SDK)
+
+    /// Demarre le flux video lunettes -> Gemini si le reglage "video" (Reglages > One)
+    /// est actif. Tolerant : si aucune lunette n'est appairee (ou en simulateur sans
+    /// mock device), OneVideoController reporte l'echec dans son propre etat sans
+    /// jamais interrompre la session vocale (audio only).
+    private func startVideoIfEnabled() {
+        guard OneSettings.videoStreamingEnabled else { return }
+        videoController.onVideoFrame = { [weak self] image in
+            self?.client.sendVideoFrame(image: image)
+        }
+        Task { await videoController.start() }
     }
 
     // MARK: - Push proactif (gateway Hermes / OpenClaw)

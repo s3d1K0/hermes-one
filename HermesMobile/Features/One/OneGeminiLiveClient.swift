@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 /// Etat de connexion au websocket Gemini Live.
 enum OneConnectionState: Equatable {
@@ -10,9 +11,9 @@ enum OneConnectionState: Equatable {
 }
 
 /// Client Gemini Live natif (URLSessionWebSocketTask), porte depuis VisionClaw
-/// (samples/CameraAccess/CameraAccess/Gemini/GeminiLiveService.swift).
-/// Simplifie : pas de video (Gemini + delegation d'outils vers le gateway
-/// Hermes via OneToolCallRouter/OneHermesBridge).
+/// (samples/CameraAccess/CameraAccess/Gemini/GeminiLiveService.swift). La video
+/// (sendVideoFrame) est alimentee par OneVideoController via OneVoiceSessionViewModel
+/// quand le toggle video (OneSettings.videoStreamingEnabled) est actif.
 @MainActor
 final class OneGeminiLiveClient {
     private(set) var connectionState: OneConnectionState = .disconnected
@@ -127,6 +128,27 @@ final class OneGeminiLiveClient {
                 "realtimeInput": [
                     "audio": [
                         "mimeType": "audio/pcm;rate=16000",
+                        "data": base64,
+                    ]
+                ]
+            ]
+            self?.sendJSON(json)
+        }
+    }
+
+    /// Envoie une frame video (JPEG base64) a Gemini Live, portee depuis VisionClaw's
+    /// GeminiLiveService.sendVideoFrame(image:). Appelee par OneVideoController
+    /// (via OneVoiceSessionViewModel) quand le toggle video est actif ; les frames
+    /// sont deja throttlees a OneConfig.videoFrameInterval avant d'arriver ici.
+    func sendVideoFrame(image: UIImage) {
+        guard connectionState == .ready else { return }
+        sendQueue.async { [weak self] in
+            guard let jpegData = image.jpegData(compressionQuality: OneConfig.videoJPEGQuality) else { return }
+            let base64 = jpegData.base64EncodedString()
+            let json: [String: Any] = [
+                "realtimeInput": [
+                    "video": [
+                        "mimeType": "image/jpeg",
                         "data": base64,
                     ]
                 ]

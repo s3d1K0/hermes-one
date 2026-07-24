@@ -39,6 +39,17 @@
 	<string>$(KEYCHAIN_SERVICE)</string>
 	<key>HermesURLScheme</key>
 	<string>$(HERMES_URL_SCHEME)</string>
+	<key>MWDAT</key>
+	<dict>
+		<key>AppLinkURLScheme</key>
+		<string>$(HERMES_URL_SCHEME)://</string>
+		<key>ClientToken</key>
+		<string>$(CLIENT_TOKEN)</string>
+		<key>MetaAppID</key>
+		<string>$(META_APP_ID)</string>
+		<key>TeamID</key>
+		<string>$(DEVELOPMENT_TEAM)</string>
+	</dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -53,7 +64,11 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Hermex needs microphone access to dictate text into the message composer.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Hermex needs camera access to capture and attach photos directly in chat.</string>
+	<string>Hermex needs camera access to capture and attach photos directly in chat, and to see through Meta smart glasses during a One voice session.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Hermex needs Bluetooth access to connect to Meta smart glasses for the One voice assistant.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Hermex needs Bluetooth access to stream audio from Meta smart glasses during a One voice session.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Hermex needs photo library access to attach images to chat messages.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
@@ -70,9 +85,15 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
+		<string>bluetooth-peripheral</string>
+		<string>external-accessory</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<key>UISupportedExternalAccessoryProtocols</key>
+	<array>
+		<string>com.meta.ar.wearable</string>
+	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
