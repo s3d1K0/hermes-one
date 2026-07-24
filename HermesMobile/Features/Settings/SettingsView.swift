@@ -90,6 +90,12 @@ struct SettingsView: View {
     // Cle API Gemini Live : hors @AppStorage (Keychain, secret) — chargee au
     // `.task` et sauvegardee a chaque changement (cf. `oneGeminiAPIKeyBinding`).
     @State private var oneGeminiAPIKeyText = ""
+    // Gateway Hermes (OpenClaw) : hote non sensible en @AppStorage (meme cle que
+    // `OneSettings.gatewayHost`), port en texte (bridge vers l'Int stocke), jeton
+    // secret hors @AppStorage (Keychain, meme pattern que la cle Gemini).
+    @AppStorage(OneSettings.gatewayHostKey) private var oneGatewayHost = ""
+    @State private var oneGatewayPortText = ""
+    @State private var oneGatewayTokenText = ""
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -500,6 +506,44 @@ struct SettingsView: View {
 
                     SettingsDivider()
 
+                    SettingsTextFieldRow(
+                        title: String(localized: "Gateway Host"),
+                        text: $oneGatewayHost,
+                        placeholder: "http://mac.local",
+                        keyboardType: .URL,
+                        autocapitalization: .never
+                    )
+
+                    SettingsTextFieldRow(
+                        title: String(localized: "Gateway Port"),
+                        text: $oneGatewayPortText,
+                        placeholder: "18789",
+                        keyboardType: .numberPad,
+                        autocapitalization: .never
+                    )
+                    .onChange(of: oneGatewayPortText) { _, newValue in
+                        // 0 (vide/illisible) reecrit la valeur brute : le getter
+                        // de OneSettings.gatewayPort retombe alors sur le repli.
+                        OneSettings.gatewayPort = Int(newValue.trimmingCharacters(in: .whitespaces)) ?? 0
+                    }
+
+                    SettingsTextFieldRow(
+                        title: String(localized: "Gateway Token"),
+                        text: $oneGatewayTokenText,
+                        placeholder: String(localized: "Jeton d'authentification"),
+                        autocapitalization: .never,
+                        isSecure: true,
+                        submitLabel: .done,
+                        onSubmit: { OneSettings.setGatewayToken(oneGatewayTokenText) }
+                    )
+                    .onChange(of: oneGatewayTokenText) { _, newValue in
+                        OneSettings.setGatewayToken(newValue)
+                    }
+
+                    SettingsFootnote(String(localized: "Adresse du gateway Hermes (OpenClaw) pour le push proactif et la delegation. Le jeton est stocke dans le trousseau, jamais sur le serveur Hermes."))
+
+                    SettingsDivider()
+
                     VStack(alignment: .leading, spacing: 6) {
                         Text(String(localized: "System Prompt"))
                             .font(AppFont.subheadline())
@@ -567,6 +611,12 @@ struct SettingsView: View {
             await loadServerSettings()
             await refreshNotificationPermissionStatus()
             oneGeminiAPIKeyText = (try? KeychainStore().load(.oneGeminiAPIKey)) ?? nil ?? ""
+            // Port : lecture brute (0 = jamais configure -> champ vide, le
+            // placeholder montre le repli). Jeton : brut du trousseau, comme la
+            // cle Gemini ci-dessus.
+            let storedPort = UserDefaults.standard.integer(forKey: OneSettings.gatewayPortKey)
+            oneGatewayPortText = storedPort != 0 ? String(storedPort) : ""
+            oneGatewayTokenText = (try? KeychainStore().load(.oneGatewayToken)) ?? nil ?? ""
         }
         .alert("Clear this server's cache?", isPresented: $isConfirmingClearCache) {
             Button("Cancel", role: .cancel) {}
