@@ -2,10 +2,10 @@ import CoreGraphics
 import Foundation
 
 /// Configuration du mode vocal "One" (Gemini Live), porte depuis VisionClaw
-/// (samples/CameraAccess/CameraAccess/Gemini/GeminiConfig.swift). Simplifiee :
-/// pas de reglages utilisateur, pas de pont OpenClaw/Hermes ici. `videoFrameInterval`
+/// (samples/CameraAccess/CameraAccess/Gemini/GeminiConfig.swift). `videoFrameInterval`
 /// et `videoJPEGQuality` sont portes pour parite mais pas encore consommes (pas de
-/// pipeline video dans ce module pour l'instant).
+/// pipeline video dans ce module pour l'instant). Le pont vers le gateway Hermes
+/// (delegation d'outils Gemini `execute`) vit dans OneHermesBridge/OneToolCallRouter.
 enum OneConfig {
     static let websocketBaseURL = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent"
     static let model = "models/gemini-2.5-flash-native-audio-preview-12-2025"

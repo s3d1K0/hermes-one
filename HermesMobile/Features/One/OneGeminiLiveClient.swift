@@ -11,7 +11,8 @@ enum OneConnectionState: Equatable {
 
 /// Client Gemini Live natif (URLSessionWebSocketTask), porte depuis VisionClaw
 /// (samples/CameraAccess/CameraAccess/Gemini/GeminiLiveService.swift).
-/// Simplifie : pas de video, pas d'appel d'outils (Gemini seul pour l'instant).
+/// Simplifie : pas de video (Gemini + delegation d'outils vers le gateway
+/// Hermes via OneToolCallRouter/OneHermesBridge).
 @MainActor
 final class OneGeminiLiveClient {
     private(set) var connectionState: OneConnectionState = .disconnected
@@ -23,8 +24,12 @@ final class OneGeminiLiveClient {
     var onDisconnected: ((String?) -> Void)?
     var onInputTranscription: ((String) -> Void)?
     var onOutputTranscription: ((String) -> Void)?
-    /// Reserve pour une future delegation d'outils ; ne fait rien pour l'instant.
-    var onToolCall: (([String: Any]) -> Void)?
+    /// Appel d'outil emis par Gemini (l'outil `execute`) ; a router vers
+    /// OneToolCallRouter (cf. OneVoiceSessionViewModel.wireCallbacks).
+    var onToolCall: ((OneToolCall) -> Void)?
+    /// Annulation d'appel(s) d'outil en cours (utilisateur a interrompu Gemini
+    /// pendant l'execution).
+    var onToolCallCancellation: ((OneToolCallCancellation) -> Void)?
 
     private var webSocketTask: URLSessionWebSocketTask?
     private var receiveTask: Task<Void, Never>?
@@ -108,6 +113,7 @@ final class OneGeminiLiveClient {
         delegate.onClose = nil
         delegate.onError = nil
         onToolCall = nil
+        onToolCallCancellation = nil
         connectionState = .disconnected
         isModelSpeaking = false
         resolveConnect(success: false)
@@ -147,6 +153,14 @@ final class OneGeminiLiveClient {
         }
     }
 
+    /// Renvoie le resultat d'un appel d'outil a Gemini (message toolResponse),
+    /// porte depuis VisionClaw's GeminiLiveService.sendToolResponse().
+    func sendToolResponse(_ response: [String: Any]) {
+        sendQueue.async { [weak self] in
+            self?.sendJSON(response)
+        }
+    }
+
     // MARK: - Private
 
     private func resolveConnect(success: Bool) {
@@ -169,6 +183,11 @@ final class OneGeminiLiveClient {
                 "systemInstruction": [
                     "parts": [
                         ["text": OneConfig.systemInstruction]
+                    ]
+                ],
+                "tools": [
+                    [
+                        "functionDeclarations": OneToolDeclarations.allDeclarations()
                     ]
                 ],
                 "realtimeInputConfig": [
@@ -260,9 +279,17 @@ final class OneGeminiLiveClient {
             return
         }
 
-        // Appel d'outil (non gere pour l'instant : Gemini seul).
-        if json["toolCall"] != nil {
-            onToolCall?(json)
+        // Appel d'outil emis par Gemini (route vers le gateway Hermes).
+        if let toolCall = OneToolCall(json: json) {
+            NSLog("[OneGeminiLiveClient] Tool call received: %d function(s)", toolCall.functionCalls.count)
+            onToolCall?(toolCall)
+            return
+        }
+
+        // Annulation d'appel d'outil (l'utilisateur a interrompu Gemini pendant l'execution).
+        if let cancellation = OneToolCallCancellation(json: json) {
+            NSLog("[OneGeminiLiveClient] Tool call cancellation: %@", cancellation.ids.joined(separator: ", "))
+            onToolCallCancellation?(cancellation)
             return
         }
 

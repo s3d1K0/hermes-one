@@ -289,6 +289,9 @@
 		DC2F6AAD3C6045D793F0D284 /* OneVoiceFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A20150EC1BE4479B89FB3B6 /* OneVoiceFeedback.swift */; };
 		81F29D841025407BA00632F8 /* OneSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4485D22281BF4737BC7AF5FD /* OneSettings.swift */; };
 		49E946AB0E914C92BCF7B09C /* OneEventClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22118AA043E948828C1AD1F7 /* OneEventClient.swift */; };
+		6F1E626608534864A451B588 /* OneToolCallModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B6B940D5204C008B7635CB /* OneToolCallModels.swift */; };
+		BDCEC01C57554C129AED80E5 /* OneHermesBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 673581E70AB249B0AB2E2D67 /* OneHermesBridge.swift */; };
+		0FDD57A247C0442F95156C77 /* OneToolCallRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632D619BEE7D404D8BE4C8ED /* OneToolCallRouter.swift */; };
 		C21300000000000000000007 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = C21300000000000000000008 /* MarkdownUI */; };
 		B5A220000000000000000005 /* ChatMarkerMessageClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A220000000000000000006 /* ChatMarkerMessageClassifierTests.swift */; };
 		B5A100000000000000000004 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B5A100000000000000000014 /* PrivacyInfo.xcprivacy */; };
@@ -660,6 +663,9 @@
 		7A20150EC1BE4479B89FB3B6 /* OneVoiceFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneVoiceFeedback.swift; sourceTree = "<group>"; };
 		4485D22281BF4737BC7AF5FD /* OneSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneSettings.swift; sourceTree = "<group>"; };
 		22118AA043E948828C1AD1F7 /* OneEventClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneEventClient.swift; sourceTree = "<group>"; };
+		46B6B940D5204C008B7635CB /* OneToolCallModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneToolCallModels.swift; sourceTree = "<group>"; };
+		673581E70AB249B0AB2E2D67 /* OneHermesBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneHermesBridge.swift; sourceTree = "<group>"; };
+		632D619BEE7D404D8BE4C8ED /* OneToolCallRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneToolCallRouter.swift; sourceTree = "<group>"; };
 		B5A220000000000000000006 /* ChatMarkerMessageClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMarkerMessageClassifierTests.swift; sourceTree = "<group>"; };
 		B5A100000000000000000017 /* HermesShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HermesShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A04500000000000000000010 /* AgentRunActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRunActivityAttributes.swift; sourceTree = "<group>"; };
@@ -999,6 +1005,9 @@
 				7A20150EC1BE4479B89FB3B6 /* OneVoiceFeedback.swift */,
 				4485D22281BF4737BC7AF5FD /* OneSettings.swift */,
 				22118AA043E948828C1AD1F7 /* OneEventClient.swift */,
+				46B6B940D5204C008B7635CB /* OneToolCallModels.swift */,
+				673581E70AB249B0AB2E2D67 /* OneHermesBridge.swift */,
+				632D619BEE7D404D8BE4C8ED /* OneToolCallRouter.swift */,
 			);
 			path = One;
 			sourceTree = "<group>";
@@ -1658,6 +1667,9 @@
 				DC2F6AAD3C6045D793F0D284 /* OneVoiceFeedback.swift in Sources */,
 				81F29D841025407BA00632F8 /* OneSettings.swift in Sources */,
 				49E946AB0E914C92BCF7B09C /* OneEventClient.swift in Sources */,
+				6F1E626608534864A451B588 /* OneToolCallModels.swift in Sources */,
+				BDCEC01C57554C129AED80E5 /* OneHermesBridge.swift in Sources */,
+				0FDD57A247C0442F95156C77 /* OneToolCallRouter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

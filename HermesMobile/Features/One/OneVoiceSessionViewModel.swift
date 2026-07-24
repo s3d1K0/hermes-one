@@ -31,6 +31,15 @@ final class OneVoiceSessionViewModel {
     // lecture de push proactif (evite de laisser le micro ouvert derriere).
     private var sleepAfterTurn = false
 
+    // Delegation d'outils (Gemini execute -> gateway Hermes), portee depuis
+    // VisionClaw's ContentView (OpenClawBridge + ToolCallRouter).
+    private let hermesBridge = OneHermesBridge()
+    private let toolCallRouter: OneToolCallRouter
+
+    init() {
+        toolCallRouter = OneToolCallRouter(bridge: hermesBridge)
+    }
+
     deinit {
         eventClient.disconnect()
     }
@@ -86,6 +95,7 @@ final class OneVoiceSessionViewModel {
 
     func stop() {
         let wasActive = phase != .idle
+        toolCallRouter.cancelAll()
         client.disconnect()
         audio.stopCapture()
         phase = .idle
@@ -164,6 +174,21 @@ final class OneVoiceSessionViewModel {
         client.onDisconnected = { [weak self] reason in
             guard let self else { return }
             self.phase = .error(reason ?? "Connexion perdue")
+        }
+
+        // Delegation d'outils : Gemini appelle `execute`, on route vers le
+        // gateway Hermes et on renvoie le resultat via sendToolResponse.
+        client.onToolCall = { [weak self] toolCall in
+            guard let self else { return }
+            for call in toolCall.functionCalls {
+                self.toolCallRouter.handleToolCall(call) { [weak self] response in
+                    self?.client.sendToolResponse(response)
+                }
+            }
+        }
+
+        client.onToolCallCancellation = { [weak self] cancellation in
+            self?.toolCallRouter.cancelToolCalls(ids: cancellation.ids)
         }
     }
 
