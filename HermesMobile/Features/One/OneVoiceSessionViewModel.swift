@@ -22,6 +22,7 @@ final class OneVoiceSessionViewModel {
 
     private let client = OneGeminiLiveClient()
     private let audio = OneAudioController()
+    private let voiceFeedback = OneVoiceFeedback()
 
     func start() async {
         guard phase != .connecting else { return }
@@ -55,6 +56,11 @@ final class OneVoiceSessionViewModel {
             return
         }
 
+        // Annonce "One active" (lunettes) avant d'ouvrir le micro : confirme a
+        // l'utilisateur que One tient la parole et evite que le micro capture
+        // sa propre synthese pendant qu'elle joue.
+        await announce("One active")
+
         do {
             try audio.startCapture()
         } catch {
@@ -67,13 +73,40 @@ final class OneVoiceSessionViewModel {
     }
 
     func stop() {
+        let wasActive = phase != .idle
         client.disconnect()
         audio.stopCapture()
-        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
         phase = .idle
+
+        guard wasActive else {
+            try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+            return
+        }
+
+        // Annonce "One desactive" puis libere la session audio seulement une
+        // fois la phrase terminee (evite de couper le HFP en pleine syntese).
+        voiceFeedback.say("One desactive") {
+            try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        }
     }
 
     // MARK: - Private
+
+    /// Prononce `text` et attend la fin de la synthese (avec filet de securite
+    /// si le delegate AVSpeechSynthesizer ne notifie jamais), portee depuis le
+    /// pattern completion+fallback de VisionClaw's activateOne().
+    private func announce(_ text: String) async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            var didResume = false
+            let resumeOnce = {
+                guard !didResume else { return }
+                didResume = true
+                continuation.resume()
+            }
+            voiceFeedback.say(text) { resumeOnce() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { resumeOnce() }
+        }
+    }
 
     private func wireCallbacks() {
         audio.onAudioCaptured = { [weak self] data in
