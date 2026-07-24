@@ -27,12 +27,11 @@ enum OneWakeSignal {
     private static let key = "oneWakeRequestedAt"
 
     /// Appele depuis l'App Intent (widget / Centre de controle). Pose l'horodatage
-    /// du reveil demande dans l'App Group et poste la notification locale pour le
-    /// cas ou l'app est deja au premier plan (warm).
+    /// du reveil demande dans l'App Group ; l'app le consomme au prochain passage
+    /// au premier plan (`scenePhase == .active`, cf. `ContentView`).
     static func request() {
         let defaults = UserDefaults(suiteName: suiteName)
         defaults?.set(Date().timeIntervalSince1970, forKey: key)
-        NotificationCenter.default.post(name: .oneWakeRequested, object: nil)
     }
 
     /// Appele par l'app au premier plan : true si un reveil est en attente. Purge
@@ -43,9 +42,4 @@ enum OneWakeSignal {
         defaults?.removeObject(forKey: key)
         return true
     }
-}
-
-extension Notification.Name {
-    /// Poste par `OneWakeSignal.request()` (App Intent) pour le cas warm.
-    static let oneWakeRequested = Notification.Name("oneWakeRequested")
 }
