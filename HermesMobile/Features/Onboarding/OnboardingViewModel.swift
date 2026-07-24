@@ -21,6 +21,10 @@ final class OnboardingViewModel {
     ) {
         if let savedServer {
             serverURLString = savedServer.absoluteString
+        } else {
+            // Pre-rempli sur le serveur hermes-webui perso (mac mini, tailnet) :
+            // l'utilisateur n'a plus qu'a saisir le mot de passe. Modifiable.
+            serverURLString = OneSecrets.hermesWebUIURL
         }
         customHeaders = savedHeaders
         errorMessage = initialErrorMessage
