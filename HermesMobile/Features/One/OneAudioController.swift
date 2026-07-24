@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+import UIKit
 
 /// Capture micro + lecture PCM pour le mode vocal "One", porte depuis
 /// VisionClaw (samples/CameraAccess/CameraAccess/Gemini/AudioManager.swift).
@@ -20,6 +21,8 @@ final class OneAudioController {
 
     private var interruptionObserver: NSObjectProtocol?
     private var routeChangeObserver: NSObjectProtocol?
+    private var mediaServicesResetObserver: NSObjectProtocol?
+    private var foregroundObserver: NSObjectProtocol?
 
     func setupSession() throws {
         let session = AVAudioSession.sharedInstance()
@@ -179,6 +182,10 @@ final class OneAudioController {
     // MARK: - Interruptions & changements de route
 
     private func setupInterruptionHandling() {
+        // Idempotent : setupSession() peut etre rappele (attemptAudioReset), on
+        // repart d'observers propres pour ne pas empiler les callbacks.
+        removeObservers()
+
         interruptionObserver = NotificationCenter.default.addObserver(
             forName: AVAudioSession.interruptionNotification,
             object: AVAudioSession.sharedInstance(),
@@ -198,8 +205,7 @@ final class OneAudioController {
                 }
             case .ended:
                 if self.wasCapturingBeforeInterruption {
-                    try? AVAudioSession.sharedInstance().setActive(true)
-                    try? self.audioEngine.start()
+                    self.resumeAudioAfterInterruption()
                 }
             @unknown default:
                 break
@@ -218,8 +224,79 @@ final class OneAudioController {
             else { return }
 
             if reason == .oldDeviceUnavailable {
+                // Lunettes BT / casque deconnecte : la route capture disparait,
+                // on reconstruit proprement la session + le tap.
                 NSLog("[One][Audio] Audio device removed")
+                if self.isCapturing {
+                    self.attemptAudioReset()
+                }
             }
+        }
+
+        mediaServicesResetObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.mediaServicesWereResetNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] _ in
+            // Le media server a redemarre : toutes les ressources audio sont
+            // invalides, on doit tout reconstruire.
+            NSLog("[One][Audio] Media services were reset")
+            self?.attemptAudioReset()
+        }
+
+        setupAppLifecycleObservers()
+    }
+
+    private func setupAppLifecycleObservers() {
+        foregroundObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.willEnterForegroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            // Le moteur audio peut avoir ete stoppe par iOS pendant que l'app
+            // etait en arriere-plan ; on relance si necessaire au retour.
+            if self.isCapturing && !self.audioEngine.isRunning {
+                NSLog("[One][Audio] Audio engine stopped while backgrounded, attempting reset")
+                self.attemptAudioReset()
+            }
+        }
+    }
+
+    /// Relance l'audio apres une interruption (appel, Siri...). Si la relance
+    /// directe echoue, reconstruit toute la session en dernier recours.
+    private func resumeAudioAfterInterruption() {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setActive(true)
+            try audioEngine.start()
+        } catch {
+            NSLog("[One][Audio] Failed to resume audio: %@", error.localizedDescription)
+            attemptAudioReset()
+        }
+    }
+
+    /// Reconstruction complete du pipeline audio : stoppe le moteur, retire le
+    /// tap, puis re-cree la session et redemarre la capture avec le garde-fou
+    /// de format. Porte de VisionClaw AudioManager.attemptAudioReset().
+    private func attemptAudioReset() {
+        NSLog("[One][Audio] Attempting audio reset")
+        let wasCapturing = isCapturing
+
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        audioEngine.inputNode.removeTap(onBus: 0)
+        isCapturing = false
+
+        guard wasCapturing else { return }
+
+        do {
+            try setupSession()
+            try startCapture()
+            NSLog("[One][Audio] Audio reset successful")
+        } catch {
+            NSLog("[One][Audio] Audio reset failed: %@", error.localizedDescription)
         }
     }
 
@@ -231,6 +308,14 @@ final class OneAudioController {
         if let observer = routeChangeObserver {
             NotificationCenter.default.removeObserver(observer)
             routeChangeObserver = nil
+        }
+        if let observer = mediaServicesResetObserver {
+            NotificationCenter.default.removeObserver(observer)
+            mediaServicesResetObserver = nil
+        }
+        if let observer = foregroundObserver {
+            NotificationCenter.default.removeObserver(observer)
+            foregroundObserver = nil
         }
     }
 
