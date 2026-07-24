@@ -18,7 +18,11 @@ enum OneConfig {
     static let videoFrameInterval: TimeInterval = 1.0
     static let videoJPEGQuality: CGFloat = 0.5
 
-    static let systemInstruction = """
+    /// Prompt systeme effectivement utilise : le reglage utilisateur (Reglages > One)
+    /// s'il existe, sinon `defaultSystemInstruction`. Lu a chaque connexion, pas mis en cache.
+    static var systemInstruction: String { OneSettings.geminiSystemPrompt }
+
+    static let defaultSystemInstruction = """
         You are an AI assistant for someone wearing Meta Ray-Ban smart glasses. You can see through their camera and have a voice conversation. Keep responses concise and natural.
 
         CRITICAL: You have NO memory, NO storage, and NO ability to take actions on your own. You cannot remember things, keep lists, set reminders, search the web, send messages, or do anything persistent. You are ONLY a voice interface.
@@ -46,7 +50,9 @@ enum OneConfig {
         For messages, confirm recipient and content before delegating unless clearly urgent.
         """
 
-    static var apiKey: String { OneSecrets.geminiAPIKey }
+    /// Cle API Gemini Live effective : le reglage utilisateur (Keychain, Reglages > One)
+    /// s'il existe, sinon `OneSecrets.geminiAPIKey` (dev local, fichier gitignore).
+    static var apiKey: String { OneSettings.geminiAPIKey() }
 
     static var liveURL: URL? {
         guard isConfigured else { return nil }

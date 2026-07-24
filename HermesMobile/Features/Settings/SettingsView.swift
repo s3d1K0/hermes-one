@@ -82,6 +82,14 @@ struct SettingsView: View {
     @AppStorage(PrimaryActionTintSettings.isEnabledKey) private var tintsPrimaryActions = false
     @AppStorage(SessionIdentitySettings.displayNameKey) private var identityDisplayName = ""
     @AppStorage(SessionIdentitySettings.initialsKey) private var identityInitials = ""
+    @AppStorage(OneSettings.geminiSystemPromptKey) private var oneGeminiSystemPrompt = OneConfig.defaultSystemInstruction
+    @AppStorage(OneSettings.speakerOutputEnabledKey) private var oneSpeakerOutputEnabled = false
+    @AppStorage(OneSettings.videoStreamingEnabledKey) private var oneVideoStreamingEnabled = true
+    @AppStorage(OneSettings.proactiveNotificationsEnabledKey) private var oneProactiveNotificationsEnabled = true
+    @AppStorage(OneSettings.autoStandbySecondsKey) private var oneAutoStandbySeconds = OneSettings.defaultAutoStandbySeconds
+    // Cle API Gemini Live : hors @AppStorage (Keychain, secret) — chargee au
+    // `.task` et sauvegardee a chaque changement (cf. `oneGeminiAPIKeyBinding`).
+    @State private var oneGeminiAPIKeyText = ""
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -474,6 +482,72 @@ struct SettingsView: View {
                     .disabled(isClearingCache)
                 }
 
+                SettingsCard(title: String(localized: "One")) {
+                    SettingsTextFieldRow(
+                        title: String(localized: "Gemini API Key"),
+                        text: $oneGeminiAPIKeyText,
+                        placeholder: String(localized: "AIza…"),
+                        autocapitalization: .never,
+                        isSecure: true,
+                        submitLabel: .done,
+                        onSubmit: { OneSettings.setGeminiAPIKey(oneGeminiAPIKeyText) }
+                    )
+                    .onChange(of: oneGeminiAPIKeyText) { _, newValue in
+                        OneSettings.setGeminiAPIKey(newValue)
+                    }
+
+                    SettingsFootnote(String(localized: "Utilisee par le mode vocal One (Gemini Live). Stockee dans le trousseau, jamais sur le serveur Hermes."))
+
+                    SettingsDivider()
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(String(localized: "System Prompt"))
+                            .font(AppFont.subheadline())
+
+                        TextEditor(text: $oneGeminiSystemPrompt)
+                            .font(AppFont.footnote())
+                            .frame(minHeight: 120)
+                            .scrollContentBackground(.hidden)
+                            .padding(8)
+                            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+
+                    SettingsDivider()
+
+                    SettingsToggleRow(
+                        title: String(localized: "Video Streaming"),
+                        systemImage: "video",
+                        isOn: $oneVideoStreamingEnabled
+                    )
+
+                    SettingsDivider()
+
+                    SettingsToggleRow(
+                        title: String(localized: "Speaker Output"),
+                        systemImage: "speaker.wave.2",
+                        isOn: $oneSpeakerOutputEnabled
+                    )
+
+                    SettingsFootnote(String(localized: "Force la sortie audio sur le haut-parleur de l'iPhone au lieu des lunettes."))
+
+                    SettingsDivider()
+
+                    SettingsToggleRow(
+                        title: String(localized: "Proactive Notifications"),
+                        systemImage: "bell.badge",
+                        isOn: $oneProactiveNotificationsEnabled
+                    )
+
+                    SettingsDivider()
+
+                    Stepper(value: $oneAutoStandbySeconds, in: 30...600, step: 30) {
+                        SettingsRowLabel(
+                            title: String(localized: "Veille auto : \(oneAutoStandbySeconds) s"),
+                            systemImage: "moon.zzz.fill"
+                        )
+                    }
+                }
+
                 SettingsCard(title: String(localized: "Account")) {
                     SettingsFootnote(signOutFootnote)
 
@@ -492,6 +566,7 @@ struct SettingsView: View {
         .task {
             await loadServerSettings()
             await refreshNotificationPermissionStatus()
+            oneGeminiAPIKeyText = (try? KeychainStore().load(.oneGeminiAPIKey)) ?? nil ?? ""
         }
         .alert("Clear this server's cache?", isPresented: $isConfirmingClearCache) {
             Button("Cancel", role: .cancel) {}

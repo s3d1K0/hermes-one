@@ -23,16 +23,30 @@ final class OneAudioController {
 
     func setupSession() throws {
         let session = AVAudioSession.sharedInstance()
-        // videoChat : AEC modere (micro sur les lunettes, haut-parleur sur les
-        // lunettes) — valeurs reprises de VisionClaw.
-        try session.setCategory(
-            .playAndRecord,
-            mode: .videoChat,
-            options: [.allowBluetoothHFP, .mixWithOthers, .defaultToSpeaker]
-        )
+        // voiceChat : AEC agressif (micro + haut-parleur co-localises sur l'iPhone),
+        // utilise quand le reglage "Sortie haut-parleur" force l'audio sur le
+        // telephone. videoChat : AEC modere (micro sur les lunettes, haut-parleur
+        // sur les lunettes), le cas par defaut. Valeurs reprises de VisionClaw.
+        let forceSpeaker = OneSettings.speakerOutputEnabled
+        if forceSpeaker {
+            try session.setCategory(
+                .playAndRecord,
+                mode: .voiceChat,
+                options: [.defaultToSpeaker, .allowBluetooth, .mixWithOthers]
+            )
+        } else {
+            try session.setCategory(
+                .playAndRecord,
+                mode: .videoChat,
+                options: [.allowBluetoothHFP, .mixWithOthers, .defaultToSpeaker]
+            )
+        }
         try session.setPreferredSampleRate(OneConfig.inputAudioSampleRate)
         try session.setPreferredIOBufferDuration(0.064)
         try session.setActive(true)
+        if forceSpeaker {
+            try? session.overrideOutputAudioPort(.speaker)
+        }
 
         setupInterruptionHandling()
     }

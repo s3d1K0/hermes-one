@@ -25,6 +25,9 @@ struct KeychainStore: KeychainStoring {
         // URL is treated as a credential (PROJECT_SPEC Phase 1), so the registry
         // lives in the Keychain, not UserDefaults (#15).
         case servers = "servers"
+        // Gemini Live API key for the "One" voice module (fork addition): a
+        // secret, so it lives in the Keychain rather than UserDefaults/OneSettings.
+        case oneGeminiAPIKey = "one_gemini_api_key"
     }
 
     private let keychain: Keychain

@@ -31,7 +31,7 @@ final class OneVoiceSessionViewModel {
         aiTranscript = ""
 
         guard OneConfig.isConfigured else {
-            phase = .error("Cle API Gemini non configuree (OneSecrets.swift)")
+            phase = .error("Cle API Gemini non configuree (Reglages > One)")
             return
         }
 
