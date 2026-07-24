@@ -321,7 +321,11 @@ struct ChatView: View {
     @State private var activeStreamStatusRefreshTask: Task<Void, Never>?
     @State private var initialAttachments: [SharedAttachmentImport]
     @State private var didUploadInitialAttachments = false
-    @State private var showOne = false
+    // Controleur One app-level (canal proactif + session persistante), injecte
+    // dans l'environnement par ContentView. Remplace un ancien `@State showOne`
+    // local pour que la meme session survive a la fermeture de l'overlay et
+    // qu'un push proactif puisse la reveiller.
+    @Environment(OneSessionController.self) private var oneController
 
     init(
         session: SessionSummary,
@@ -404,7 +408,7 @@ struct ChatView: View {
                 Task { await sendVoiceNote(audioData: data, filename: filename) }
             },
             onStartOne: {
-                showOne = true
+                oneController.present()
             },
             onCancel: {
                 Task { await cancelStream() }
@@ -498,6 +502,26 @@ struct ChatView: View {
             NavigationAppearanceCompletionObserver(action: handleInitialAppearanceCompletion)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
+        )
+    }
+
+    /// Binding vers l'etat de presentation de l'overlay One, possede par le
+    /// controller app-level. Extrait de `body` pour tenir sous la limite de
+    /// type-check du compilateur (#316).
+    private var oneOverlayPresentedBinding: Binding<Bool> {
+        Binding(
+            get: { oneController.isOverlayPresented },
+            set: { oneController.isOverlayPresented = $0 }
+        )
+    }
+
+    /// Overlay vocal One presente en plein ecran, branche sur la session
+    /// partagee du controller app-level. Extrait de `body` (chaine de modifieurs
+    /// deja a la limite de type-check, #316).
+    private var oneVoiceOverlay: some View {
+        OneVoiceOverlayView(
+            vm: oneController.viewModel,
+            onClose: { oneController.isOverlayPresented = false }
         )
     }
 
@@ -667,8 +691,8 @@ struct ChatView: View {
             .fullScreenCover(item: $selectableResponseText) { selectableText in
                 SelectableResponseTextView(selection: selectableText)
             }
-            .fullScreenCover(isPresented: $showOne) {
-                OneVoiceOverlayView(onClose: { showOne = false })
+            .fullScreenCover(isPresented: oneOverlayPresentedBinding) {
+                oneVoiceOverlay
             }
             .sheet(item: $attachmentPreviewItem) { item in
                 ChatAttachmentPreviewView(

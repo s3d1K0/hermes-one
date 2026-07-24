@@ -4,9 +4,12 @@ import SwiftUI
 /// (porte depuis VisionClaw). Capture le micro, joue les reponses audio et
 /// affiche les transcriptions en direct.
 struct OneVoiceOverlayView: View {
+    /// Session vocale partagee, possede par `OneSessionController` (app-level) et
+    /// non plus creee localement : c'est ce ViewModel qu'un push proactif reveille
+    /// avant meme que l'overlay ne soit presente.
+    let vm: OneVoiceSessionViewModel
     let onClose: () -> Void
 
-    @State private var vm = OneVoiceSessionViewModel()
     @State private var isPulsing = false
 
     var body: some View {

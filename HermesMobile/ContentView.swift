@@ -9,10 +9,21 @@ struct ContentView: View {
     @State private var pendingNewChatRequest: NewChatRequest?
     @State private var didCheckInitialPendingShare = false
     @State private var intentRouter = AppIntentRouter.shared
+    // Controleur One app-level : possede le canal proactif (heartbeat/cron du
+    // gateway Hermes) + l'unique session vocale, connecte au lancement et
+    // re-evalue a chaque retour au premier plan. Injecte dans l'environnement
+    // pour que ChatView (overlay) et le reveil externe partagent le meme objet.
+    @State private var oneController = OneSessionController()
 
     var body: some View {
         content
+            .environment(oneController)
             .onOpenURL(perform: handleOpenURL)
+            .task {
+                // Ouvre le canal proactif au lancement s'il est configure, pour
+                // qu'un push Hermes puisse reveiller One meme overlay ferme.
+                oneController.connectProactiveChannelIfConfigured()
+            }
             .task {
                 guard !didCheckInitialPendingShare else { return }
                 didCheckInitialPendingShare = true
@@ -34,6 +45,9 @@ struct ContentView: View {
             }
             .onChange(of: scenePhase) {
                 guard scenePhase == .active else { return }
+                // Re-evalue le canal proactif : les reglages One (host/port/token,
+                // toggle notifications) ont pu changer pendant que l'app etait en fond.
+                oneController.refreshProactiveChannel()
                 importPendingSharedDraftIfAvailable()
                 // #248: the foreground pass stays silent — the in-session completion
                 // paths own notifications while the app is alive.

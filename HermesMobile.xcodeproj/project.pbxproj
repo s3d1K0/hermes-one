@@ -105,6 +105,7 @@
 		29695464563C4A6869613412 /* OneWearablesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A42E9C6C083B790CEB16B8 /* OneWearablesController.swift */; };
 		2BE8F2B38F094C4C9EB18301 /* SkillsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BE8F2B38F094C4C9EB18300 /* SkillsViewModelTests.swift */; };
 		2D6135C8A50145EA9A149FAB /* OneConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A03BBB6D22408C9372D6C9 /* OneConfig.swift */; };
+		2D84B6BDD4CE3484D0FFCCCA /* OneSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CDB544EBA7EA3E8932F970F /* OneSessionController.swift */; };
 		36CD9EF0B0734E5F8C28BB92 /* SlashCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA59130ED4141049177576C /* SlashCommand.swift */; };
 		3A14FA3A4B17EB9130D478AF /* MWDATMockDevice in Frameworks */ = {isa = PBXBuildFile; productRef = 4FBAB47B6CB310F759DCFD4E /* MWDATMockDevice */; };
 		3CB1E8F307FD40F28D02ABDA /* OneAudioController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DBB7885ADC44029A6718330 /* OneAudioController.swift */; };
@@ -479,6 +480,7 @@
 		4B60D0358F9B2E870FACFFE6 /* OneVideoController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OneVideoController.swift; sourceTree = "<group>"; };
 		57B5FD09B6B5937573B5F9A4 /* InsightsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		5CAA18B9959948DD9E3340B5 /* OneSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneSecrets.swift; sourceTree = "<group>"; };
+		5CDB544EBA7EA3E8932F970F /* OneSessionController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OneSessionController.swift; sourceTree = "<group>"; };
 		5DA59130ED4141049177576C /* SlashCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlashCommand.swift; sourceTree = "<group>"; };
 		632D619BEE7D404D8BE4C8ED /* OneToolCallRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneToolCallRouter.swift; sourceTree = "<group>"; };
 		673581E70AB249B0AB2E2D67 /* OneHermesBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneHermesBridge.swift; sourceTree = "<group>"; };
@@ -1282,6 +1284,7 @@
 				632D619BEE7D404D8BE4C8ED /* OneToolCallRouter.swift */,
 				D4A42E9C6C083B790CEB16B8 /* OneWearablesController.swift */,
 				4B60D0358F9B2E870FACFFE6 /* OneVideoController.swift */,
+				5CDB544EBA7EA3E8932F970F /* OneSessionController.swift */,
 			);
 			path = One;
 			sourceTree = "<group>";
@@ -1688,6 +1691,7 @@
 				0FDD57A247C0442F95156C77 /* OneToolCallRouter.swift in Sources */,
 				29695464563C4A6869613412 /* OneWearablesController.swift in Sources */,
 				EC9BBDC1D4BF9E0B18CA5D8C /* OneVideoController.swift in Sources */,
+				2D84B6BDD4CE3484D0FFCCCA /* OneSessionController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
