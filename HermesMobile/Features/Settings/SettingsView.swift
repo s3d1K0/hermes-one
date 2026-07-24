@@ -102,6 +102,11 @@ struct SettingsView: View {
     // est suivi par la vue -> l'etat (Connectees / Connexion… / Non connectees) et le
     // bouton bascule se mettent a jour en direct.
     @State private var oneWearables = OneWearablesController.shared
+    // Controleur One app-level (injecte par ContentView) : possede le canal
+    // proactif. Quand les reglages gateway changent ici, on lui demande de
+    // re-evaluer/re-pointer la socket immediatement, sans attendre un cycle
+    // background->foreground (cf. review vague 2, IMPORTANT-3).
+    @Environment(OneSessionController.self) private var oneController
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -519,6 +524,12 @@ struct SettingsView: View {
                         keyboardType: .URL,
                         autocapitalization: .never
                     )
+                    .onChange(of: oneGatewayHost) { _, _ in
+                        // Reglages gateway modifies : re-pointe la socket proactive
+                        // tout de suite (sinon elle reste collee a l'ancienne adresse
+                        // ou attend un cycle background->foreground). IMPORTANT-3.
+                        oneController.refreshProactiveChannel()
+                    }
 
                     SettingsTextFieldRow(
                         title: String(localized: "Gateway Port"),
@@ -531,6 +542,7 @@ struct SettingsView: View {
                         // 0 (vide/illisible) reecrit la valeur brute : le getter
                         // de OneSettings.gatewayPort retombe alors sur le repli.
                         OneSettings.gatewayPort = Int(newValue.trimmingCharacters(in: .whitespaces)) ?? 0
+                        oneController.refreshProactiveChannel()
                     }
 
                     SettingsTextFieldRow(
@@ -540,10 +552,14 @@ struct SettingsView: View {
                         autocapitalization: .never,
                         isSecure: true,
                         submitLabel: .done,
-                        onSubmit: { OneSettings.setGatewayToken(oneGatewayTokenText) }
+                        onSubmit: {
+                            OneSettings.setGatewayToken(oneGatewayTokenText)
+                            oneController.refreshProactiveChannel()
+                        }
                     )
                     .onChange(of: oneGatewayTokenText) { _, newValue in
                         OneSettings.setGatewayToken(newValue)
+                        oneController.refreshProactiveChannel()
                     }
 
                     SettingsFootnote(String(localized: "Adresse du gateway Hermes (OpenClaw) pour le push proactif et la delegation. Le jeton est stocke dans le trousseau, jamais sur le serveur Hermes."))
@@ -587,6 +603,11 @@ struct SettingsView: View {
                         systemImage: "bell.badge",
                         isOn: $oneProactiveNotificationsEnabled
                     )
+                    .onChange(of: oneProactiveNotificationsEnabled) { _, _ in
+                        // Activer/desactiver le push proactif ouvre/coupe le canal
+                        // immediatement (sinon il attend un cycle foreground).
+                        oneController.refreshProactiveChannel()
+                    }
 
                     SettingsDivider()
 
@@ -687,6 +708,8 @@ struct SettingsView: View {
                 oneGatewayHost = ""
                 oneGatewayPortText = ""
                 oneGatewayTokenText = ""
+                // Gateway efface -> coupe le canal proactif.
+                oneController.refreshProactiveChannel()
             }
         } message: {
             Text("Efface la cle Gemini, le gateway et tous les reglages One. Les autres reglages de l'app ne sont pas touches.")
@@ -2485,4 +2508,5 @@ struct AddServerView: View {
     NavigationStack {
         SettingsView(authManager: AuthManager(), server: URL(staticString: "https://webui.example.test"))
     }
+    .environment(OneSessionController())
 }
