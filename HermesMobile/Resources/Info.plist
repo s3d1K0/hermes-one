@@ -52,6 +52,8 @@
 	</dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>100.64.0.0/10</key>
@@ -62,7 +64,7 @@
 		</dict>
 	</dict>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Hermex needs microphone access to dictate text into the message composer.</string>
+	<string>Hermex needs microphone access to dictate text into the message composer and to have voice conversations with the One assistant while streaming from your Meta smart glasses.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Hermex needs camera access to capture and attach photos directly in chat, and to see through Meta smart glasses during a One voice session.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>

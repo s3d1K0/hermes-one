@@ -36,6 +36,7 @@ struct SettingsView: View {
     @State private var didScrollToInitialTarget = false
     @State private var isPresentingAddServer = false
     @State private var isConfirmingClearCache = false
+    @State private var isConfirmingResetOne = false
     @State private var isClearingCache = false
     @State private var cacheStatusMessage: String?
     @State private var isLoadingServerSettings = false
@@ -627,6 +628,17 @@ struct SettingsView: View {
                     .disabled(oneWearables.registrationState == .registering)
 
                     SettingsFootnote(String(localized: "Connecte les Ray-Ban Meta (ouvre l'app Meta AI). Necessaire pour le flux video vers One."))
+
+                    SettingsDivider()
+
+                    // Reset One (Task 8) : efface cle Gemini + gateway (Keychain) et
+                    // tous les reglages One (UserDefaults). Reference VisionClaw :
+                    // SettingsManager.resetAll() + bouton "Reset to Defaults".
+                    SettingsButton(String(localized: "Reinitialiser One"), role: .destructive) {
+                        isConfirmingResetOne = true
+                    }
+
+                    SettingsFootnote(String(localized: "Efface la cle Gemini, les coordonnees du gateway et tous les reglages One (retour aux valeurs par defaut)."))
                 }
 
                 SettingsCard(title: String(localized: "Account")) {
@@ -664,6 +676,20 @@ struct SettingsView: View {
             }
         } message: {
             Text("This server's cached sessions and messages will be deleted. Other servers and online server data are not affected.")
+        }
+        .alert("Reinitialiser One ?", isPresented: $isConfirmingResetOne) {
+            Button("Annuler", role: .cancel) {}
+            Button("Reinitialiser", role: .destructive) {
+                OneSettings.resetOneDefaults()
+                // Recale les champs locaux (@AppStorage se recale seul via
+                // UserDefaults ; les secrets Keychain sont vides apres reset).
+                oneGeminiAPIKeyText = ""
+                oneGatewayHost = ""
+                oneGatewayPortText = ""
+                oneGatewayTokenText = ""
+            }
+        } message: {
+            Text("Efface la cle Gemini, le gateway et tous les reglages One. Les autres reglages de l'app ne sont pas touches.")
         }
         .alert("Update server?", isPresented: $isConfirmingUpdate) {
             Button("Cancel", role: .cancel) {}

@@ -134,4 +134,23 @@ enum OneSettings {
         }
         set { defaults.set(newValue, forKey: autoStandbySecondsKey) }
     }
+
+    // MARK: - Reset
+
+    /// Reinitialise tous les reglages One : efface les cles UserDefaults non
+    /// sensibles (prompt, audio/video, notifications, veille, hote/port gateway)
+    /// puis les secrets Keychain (cle API Gemini + jeton gateway). Chaque getter
+    /// retombe alors sur son repli `OneSecrets` / valeur par defaut. Porte depuis
+    /// VisionClaw SettingsManager.resetAll().
+    static func resetOneDefaults(keychain: any KeychainStoring = KeychainStore()) {
+        for key in [
+            geminiSystemPromptKey, speakerOutputEnabledKey, videoStreamingEnabledKey,
+            proactiveNotificationsEnabledKey, autoStandbySecondsKey,
+            gatewayHostKey, gatewayPortKey,
+        ] {
+            defaults.removeObject(forKey: key)
+        }
+        try? keychain.delete(.oneGeminiAPIKey)
+        try? keychain.delete(.oneGatewayToken)
+    }
 }

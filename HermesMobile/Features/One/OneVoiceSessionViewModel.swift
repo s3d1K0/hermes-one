@@ -235,8 +235,12 @@ final class OneVoiceSessionViewModel {
     /// mock device), OneVideoController reporte l'echec dans son propre etat sans
     /// jamais interrompre la session vocale (audio only).
     private func startVideoIfEnabled() {
-        guard OneSettings.videoStreamingEnabled else { return }
         videoController.onVideoFrame = { [weak self] image in
+            // Reevalue le reglage a CHAQUE frame (toggle "Video Streaming" a chaud
+            // depuis Reglages > One) au lieu d'un unique guard au demarrage : porte
+            // depuis VisionClaw GeminiSessionViewModel.sendVideoFrameIfThrottled,
+            // qui teste SettingsManager.shared.videoStreamingEnabled par frame.
+            guard OneSettings.videoStreamingEnabled else { return }
             self?.client.sendVideoFrame(image: image)
         }
         Task { await videoController.start() }
