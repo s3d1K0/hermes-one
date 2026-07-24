@@ -203,7 +203,14 @@ struct ChatTranscriptView: View {
         viewportWidth: CGFloat,
         contentWidth: CGFloat
     ) -> some View {
-        VStack(spacing: transcriptMessageSpacing) {
+        // LazyVStack (au lieu de VStack) : ne materialise que les lignes proches
+        // de l'ecran au lieu de rendre TOUS les messages charges d'un coup. Sur
+        // une conversation enorme (ex. l'historique Telegram), le VStack eager
+        // rendait les 50+ messages/page accumules simultanement (MarkdownRenderer
+        // lourd) -> lag au scroll. Les `.id()` par ligne + `.equatable()` sont
+        // conserves ; l'ancrage de scroll (`.defaultScrollAnchor`) reste gere par
+        // le ScrollView parent.
+        LazyVStack(spacing: transcriptMessageSpacing) {
             olderMessagesButton(proxy: proxy)
 
             if let compressionReferenceCard, compressionReferenceCard.afterRenderID == nil {
