@@ -25,7 +25,9 @@ final class OneVoiceSessionViewModel {
     private let voiceFeedback = OneVoiceFeedback()
     // Video lunettes (Meta Wearables DAT SDK) -> Gemini, portee depuis VisionClaw's
     // StreamSessionViewModel ; active seulement si OneSettings.videoStreamingEnabled.
-    private let wearablesController = OneWearablesController()
+    // Instance partagee (Task 5) : la meme que celle pilotee par la vue Reglages,
+    // pour que l'appairage fait dans les Reglages rende la video atteignable ici.
+    private let wearablesController = OneWearablesController.shared
     private let videoController: OneVideoController
     // [Push proactif] Le canal d'evenements du gateway Hermes (OneEventClient) ne
     // vit PLUS ici : il est possede par OneSessionController au niveau app, pour

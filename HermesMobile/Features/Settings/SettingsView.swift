@@ -96,6 +96,11 @@ struct SettingsView: View {
     @AppStorage(OneSettings.gatewayHostKey) private var oneGatewayHost = ""
     @State private var oneGatewayPortText = ""
     @State private var oneGatewayTokenText = ""
+    // Appairage lunettes (Task 5) : instance partagee OneWearablesController, meme
+    // objet que celui pilote par la session vocale. `registrationState` (@Observable)
+    // est suivi par la vue -> l'etat (Connectees / Connexion… / Non connectees) et le
+    // bouton bascule se mettent a jour en direct.
+    @State private var oneWearables = OneWearablesController.shared
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -590,6 +595,38 @@ struct SettingsView: View {
                             systemImage: "moon.zzz.fill"
                         )
                     }
+
+                    SettingsDivider()
+
+                    // Appairage lunettes (Task 5) : sans ce bouton, connectGlasses()
+                    // n'etait jamais appele -> registrationState jamais .registered ->
+                    // la video des lunettes restait inatteignable. Reference VisionClaw :
+                    // HomeScreenView (connectGlasses) + NonStreamView (etat device).
+                    SettingsValueRow(title: String(localized: "Lunettes")) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "eyeglasses")
+                                .foregroundStyle(.secondary)
+                                .accessibilityHidden(true)
+                            Text(oneGlassesStateLabel)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    SettingsButton(
+                        oneGlassesButtonTitle,
+                        isLoading: oneWearables.registrationState == .registering
+                    ) {
+                        Task {
+                            if oneWearables.isRegistered {
+                                await oneWearables.disconnectGlasses()
+                            } else {
+                                await oneWearables.connectGlasses()
+                            }
+                        }
+                    }
+                    .disabled(oneWearables.registrationState == .registering)
+
+                    SettingsFootnote(String(localized: "Connecte les Ray-Ban Meta (ouvre l'app Meta AI). Necessaire pour le flux video vers One."))
                 }
 
                 SettingsCard(title: String(localized: "Account")) {
@@ -838,6 +875,29 @@ struct SettingsView: View {
         } else {
             SettingsStatusPill(label: serverSettingsError ?? String(localized: "Unknown"), tint: .orange)
         }
+    }
+
+    // Etat d'appairage lunettes affiche a cote du bouton bascule (Task 5). Mappe le
+    // RegistrationState DAT : .registered -> Connectees, .registering -> Connexion…,
+    // sinon Non connectees (.available / .unavailable).
+    private var oneGlassesStateLabel: String {
+        switch oneWearables.registrationState {
+        case .registered:
+            return String(localized: "Connectees")
+        case .registering:
+            return String(localized: "Connexion…")
+        case .available, .unavailable:
+            return String(localized: "Non connectees")
+        @unknown default:
+            return String(localized: "Non connectees")
+        }
+    }
+
+    // Libelle du bouton bascule : Deconnecter quand appairees, sinon Connecter.
+    private var oneGlassesButtonTitle: String {
+        oneWearables.isRegistered
+            ? String(localized: "Deconnecter les lunettes")
+            : String(localized: "Connecter les lunettes")
     }
 
     private var appVersion: String {

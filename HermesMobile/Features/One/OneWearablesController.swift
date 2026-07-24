@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 import MWDATCore
 
 #if canImport(MWDATMockDevice)
@@ -15,8 +16,20 @@ import MWDATCore
 /// depuis 0.4.0). `Wearables`/`WearablesInterface`/`RegistrationState` sont restes
 /// stables depuis l'app VisionClaw de reference ; seule l'API de streaming
 /// (MWDATCamera) a change entre 0.4.x et 0.8.x, geree par OneVideoController.
+///
+/// [Fork ONE / Task 5] `@Observable` + singleton partage (`shared`) : l'appairage
+/// se pilote depuis les Reglages (bouton Connecter/Deconnecter + etat), et la meme
+/// instance alimente OneVideoController via le ViewModel -- connecter les lunettes
+/// dans les Reglages rend donc la video atteignable dans la session. `registrationState`
+/// (mappe du `registrationStateStream` DAT) est observe par la vue Reglages.
+@Observable
 @MainActor
 final class OneWearablesController {
+    /// Instance partagee : consommee a la fois par la vue Reglages (appairage) et
+    /// par `OneVoiceSessionViewModel`/`OneVideoController` (flux video). Une seule
+    /// instance pour que l'etat d'enregistrement soit coherent partout.
+    static let shared = OneWearablesController()
+
     private(set) var registrationState: RegistrationState
     private(set) var devices: [DeviceIdentifier]
     private(set) var hasMockDevice: Bool = false
@@ -25,8 +38,11 @@ final class OneWearablesController {
     /// createSession).
     let wearables: WearablesInterface
 
-    private var registrationTask: Task<Void, Never>?
-    private var deviceStreamTask: Task<Void, Never>?
+    // @ObservationIgnored : ces handles de tache internes ne participent pas a
+    // l'observation, et le rester en propriete stockee simple permet a `deinit`
+    // (nonisolated) de les annuler sans passer par un accesseur MainActor.
+    @ObservationIgnored private var registrationTask: Task<Void, Never>?
+    @ObservationIgnored private var deviceStreamTask: Task<Void, Never>?
 
     /// `Wearables.configure()` doit etre appele une seule fois par process. Protege
     /// par un flag statique au cas ou plusieurs controleurs seraient instancies.
