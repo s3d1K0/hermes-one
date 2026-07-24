@@ -92,9 +92,69 @@ enum OneToolCallStatus: Equatable {
 
 enum OneToolDeclarations {
 
+    /// Outils exposes a Gemini Live : le petit set RAPIDE gere localement
+    /// (OneLocalTools : heure, minuteur, rappel) + l'outil `execute` de delegation
+    /// a Hermes pour tout le reste. Le dispatch local vs delegation vit dans
+    /// OneToolCallRouter (source de verite des noms locaux : OneLocalTools.toolNames).
     static func allDeclarations() -> [[String: Any]] {
-        return [execute]
+        return [getCurrentTime, setTimer, setReminder, execute]
     }
+
+    // MARK: - Outils rapides locaux (fast-path, JAMAIS delegues a Hermes)
+
+    static let getCurrentTime: [String: Any] = [
+        "name": "get_current_time",
+        "description": "Donne la date et l'heure locales actuelles, instantanement. Utilise-le pour toute question sur l'heure ou la date du jour au lieu de deviner ou de deleguer.",
+        "parameters": [
+            "type": "object",
+            "properties": [:] as [String: Any],
+        ] as [String: Any],
+        "behavior": "BLOCKING",
+    ]
+
+    static let setTimer: [String: Any] = [
+        "name": "set_timer",
+        "description": "Declenche un minuteur local : une notification apres un delai en secondes. Utilise-le pour les minuteurs simples (\"minuteur de 5 minutes\", \"previens-moi dans 30 secondes\").",
+        "parameters": [
+            "type": "object",
+            "properties": [
+                "seconds": [
+                    "type": "number",
+                    "description": "Duree du minuteur en secondes (>= 1). Convertis les minutes/heures en secondes.",
+                ],
+                "label": [
+                    "type": "string",
+                    "description": "Libelle court affiche dans la notification (ex: \"Pates\", \"Pause\"). Optionnel.",
+                ],
+            ] as [String: Any],
+            "required": ["seconds"],
+        ] as [String: Any],
+        "behavior": "BLOCKING",
+    ]
+
+    static let setReminder: [String: Any] = [
+        "name": "set_reminder",
+        "description": "Programme un rappel local a une heure/date donnee (notification). Utilise-le pour \"rappelle-moi a 15h\", \"rappelle-moi demain matin\". Pour l'heure courante, appelle d'abord get_current_time si besoin de calculer la date cible.",
+        "parameters": [
+            "type": "object",
+            "properties": [
+                "datetime": [
+                    "type": "string",
+                    "description": "Date et heure du rappel en heure LOCALE, au format ISO 8601 (ex: \"2026-07-24T15:00:00\"). Alternative: fournis 'seconds_from_now'.",
+                ],
+                "seconds_from_now": [
+                    "type": "number",
+                    "description": "Delai relatif en secondes avant le rappel, si tu prefreres au datetime. Optionnel.",
+                ],
+                "label": [
+                    "type": "string",
+                    "description": "Texte du rappel affiche dans la notification (ex: \"Appeler le dentiste\").",
+                ],
+            ] as [String: Any],
+            "required": ["label"],
+        ] as [String: Any],
+        "behavior": "BLOCKING",
+    ]
 
     static let execute: [String: Any] = [
         "name": "execute",

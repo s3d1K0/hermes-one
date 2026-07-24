@@ -23,6 +23,7 @@
 		10CA110C0DE000000000B003 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 10CA110C0DE000000000B002 /* Localizable.xcstrings */; };
 		10CA110C0DE000000000B004 /* AppShortcuts.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 10CA110C0DE000000000B005 /* AppShortcuts.xcstrings */; };
 		10CA110C0DE000000000C001 /* LocalizationCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10CA110C0DE000000000C002 /* LocalizationCatalogTests.swift */; };
+		15D834DD1F5F578018D936F3 /* OneLocalTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C768B6BA2AF1A417298A153 /* OneLocalTools.swift */; };
 		172A03DCCC9A080205904691 /* MWDATCore in Frameworks */ = {isa = PBXBuildFile; productRef = F725891F282BAD787A3C240A /* MWDATCore */; };
 		19C1150000000000000000A1 /* CliSessionsSyncModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19C1150000000000000000A2 /* CliSessionsSyncModel.swift */; };
 		19C1150000000000000000A3 /* CliSessionsSyncModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19C1150000000000000000A4 /* CliSessionsSyncModelTests.swift */; };
@@ -485,6 +486,7 @@
 		488791F556304AD2AC59BC5D /* ThirdPartyNotices */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ThirdPartyNotices; sourceTree = "<group>"; };
 		4B60D0358F9B2E870FACFFE6 /* OneVideoController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OneVideoController.swift; sourceTree = "<group>"; };
 		57B5FD09B6B5937573B5F9A4 /* InsightsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		5C768B6BA2AF1A417298A153 /* OneLocalTools.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OneLocalTools.swift; sourceTree = "<group>"; };
 		5CAA18B9959948DD9E3340B5 /* OneSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneSecrets.swift; sourceTree = "<group>"; };
 		5CDB544EBA7EA3E8932F970F /* OneSessionController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OneSessionController.swift; sourceTree = "<group>"; };
 		5DA59130ED4141049177576C /* SlashCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlashCommand.swift; sourceTree = "<group>"; };
@@ -1298,6 +1300,7 @@
 				5CDB544EBA7EA3E8932F970F /* OneSessionController.swift */,
 				9F7893E214DCFE64F43636CE /* OneWakeSignal.swift */,
 				7B5D1485D878C69304006165 /* OneActivationIntent.swift */,
+				5C768B6BA2AF1A417298A153 /* OneLocalTools.swift */,
 			);
 			path = One;
 			sourceTree = "<group>";
@@ -1707,6 +1710,7 @@
 				2D84B6BDD4CE3484D0FFCCCA /* OneSessionController.swift in Sources */,
 				2AB252CEA29D71F5F774969D /* OneWakeSignal.swift in Sources */,
 				48BE1F61DF4C5723665A3202 /* OneActivationIntent.swift in Sources */,
+				15D834DD1F5F578018D936F3 /* OneLocalTools.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

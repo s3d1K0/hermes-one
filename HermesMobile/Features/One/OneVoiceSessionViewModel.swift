@@ -240,7 +240,11 @@ final class OneVoiceSessionViewModel {
             // [Retour-veille] Une delegation Hermes = fin de l'interaction directe :
             // apres l'ack (onTurnComplete), on repasse en veille. Porte depuis
             // VisionClaw's GeminiSessionViewModel (onToolCall pose sleepAfterTurn).
-            if !toolCall.functionCalls.isEmpty {
+            // Les outils RAPIDES locaux (heure, minuteur, rappel) restent au
+            // contraire conversationnels : ils ne declenchent PAS la veille, pour
+            // enchainer naturellement a l'oral.
+            let hasHermesDelegation = toolCall.functionCalls.contains { !OneLocalTools.isLocal($0.name) }
+            if hasHermesDelegation {
                 self.sleepAfterTurn = true
             }
             for call in toolCall.functionCalls {

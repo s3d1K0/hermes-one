@@ -28,6 +28,30 @@ final class OneToolCallRouter {
             "[OneToolCall] Received: %@ (id: %@) args: %@",
             callName, callId, String(describing: call.args))
 
+        // Fast-path : les outils rapides locaux (heure, minuteur, rappel) sont
+        // traites dans l'app (OneLocalTools), sans passer par le gateway Hermes ni
+        // par le coupe-circuit de delegation. Latence ~0, fonctionne hors-ligne.
+        if OneLocalTools.isLocal(callName) {
+            let task = Task { @MainActor in
+                let result = await OneLocalTools.handle(name: callName, args: call.args)
+
+                guard !Task.isCancelled else {
+                    NSLog("[OneToolCall] Local task %@ was cancelled, skipping response", callId)
+                    return
+                }
+
+                NSLog(
+                    "[OneToolCall] Local result for %@ (id: %@): %@",
+                    callName, callId, String(describing: result))
+
+                let response = self.buildToolResponse(callId: callId, name: callName, result: result)
+                sendResponse(response)
+                self.inFlightTasks.removeValue(forKey: callId)
+            }
+            inFlightTasks[callId] = task
+            return
+        }
+
         // Coupe-circuit : arrete d'envoyer des appels d'outil apres des echecs repetes.
         if consecutiveFailures >= maxConsecutiveFailures {
             NSLog(
