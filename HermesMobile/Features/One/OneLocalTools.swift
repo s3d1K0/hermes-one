@@ -44,8 +44,10 @@ enum OneLocalTools {
         formatter.dateFormat = "EEEE d MMMM yyyy 'a' HH'h'mm"
         let now = Date()
         let readable = formatter.string(from: now)
-        let iso = ISO8601DateFormatter().string(from: now)
-        return .success("Il est \(readable). (ISO local: \(iso))")
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.timeZone = .current
+        let iso = isoFormatter.string(from: now)
+        return .success("Il est \(readable). (ISO \(TimeZone.current.identifier): \(iso))")
     }
 
     // MARK: - set_timer
