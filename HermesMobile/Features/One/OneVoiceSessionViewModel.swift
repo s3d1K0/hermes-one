@@ -135,7 +135,12 @@ final class OneVoiceSessionViewModel {
 
     private func wireCallbacks() {
         audio.onAudioCaptured = { [weak self] data in
-            self?.client.sendAudio(data)
+            guard let self else { return }
+            // [Anti-echo half-duplex] En mode Speaker Output, le micro reinjecte
+            // la voix de Gemini -> boucle d'echo. On coupe l'envoi tant que le
+            // modele parle (portee de VisionClaw GeminiSessionViewModel.startSession).
+            if OneSettings.speakerOutputEnabled && self.client.isModelSpeaking { return }
+            self.client.sendAudio(data)
         }
 
         client.onAudioReceived = { [weak self] data in
