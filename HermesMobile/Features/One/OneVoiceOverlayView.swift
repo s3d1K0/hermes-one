@@ -63,7 +63,14 @@ struct OneVoiceOverlayView: View {
             }
         }
         .onDisappear {
-            vm.stop()
+            // Ne stoppe que si la session tourne encore. Quand la fin est
+            // programmatique (timer d'inactivite / sleepAfterTurn -> stop()),
+            // phase est deja .idle et onSessionEnded a baisse le flag qui
+            // declenche ce dismiss : un 2e stop() ici couperait net l'annonce
+            // TTS "One desactive" que le 1er stop() differe volontairement.
+            if vm.phase != .idle {
+                vm.stop()
+            }
         }
         .onAppear {
             isPulsing = true
