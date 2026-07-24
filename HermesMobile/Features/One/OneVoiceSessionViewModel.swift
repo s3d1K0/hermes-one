@@ -37,6 +37,11 @@ final class OneVoiceSessionViewModel {
     // lecture de push proactif (evite de laisser le micro ouvert derriere).
     private var sleepAfterTurn = false
 
+    // [Veille auto] Minuteur d'inactivite : apres OneSettings.autoStandbySeconds
+    // sans transcription entrante ni fin de tour, on repasse en veille (stop()).
+    // Porte depuis VisionClaw's GeminiSessionViewModel.armActiveInactivityTimer().
+    private var inactivityTimer: Timer?
+
     // Delegation d'outils (Gemini execute -> gateway Hermes), portee depuis
     // VisionClaw's ContentView (OpenClawBridge + ToolCallRouter).
     private let hermesBridge = OneHermesBridge()
@@ -98,6 +103,8 @@ final class OneVoiceSessionViewModel {
 
     func stop() {
         let wasActive = phase != .idle
+        inactivityTimer?.invalidate()
+        inactivityTimer = nil
         toolCallRouter.cancelAll()
         client.disconnect()
         audio.stopCapture()
@@ -135,6 +142,17 @@ final class OneVoiceSessionViewModel {
         }
     }
 
+    /// (Re)arme le minuteur d'inactivite : apres `OneSettings.autoStandbySeconds`
+    /// sans activite (transcription entrante / fin de tour), on repasse en veille.
+    /// Porte depuis VisionClaw's GeminiSessionViewModel.armActiveInactivityTimer().
+    private func armInactivityTimer() {
+        inactivityTimer?.invalidate()
+        let secs = TimeInterval(OneSettings.autoStandbySeconds)
+        inactivityTimer = Timer.scheduledTimer(withTimeInterval: secs, repeats: false) { [weak self] _ in
+            Task { @MainActor in self?.stop() }
+        }
+    }
+
     private func wireCallbacks() {
         audio.onAudioCaptured = { [weak self] data in
             guard let self else { return }
@@ -160,6 +178,7 @@ final class OneVoiceSessionViewModel {
         client.onTurnComplete = { [weak self] in
             guard let self else { return }
             self.userTranscript = ""
+            self.armInactivityTimer()
             // [Push proactif] Apres la lecture d'un push Hermes, on repasse en
             // veille au lieu de laisser le micro ouvert.
             if self.sleepAfterTurn {
@@ -174,6 +193,7 @@ final class OneVoiceSessionViewModel {
             guard let self else { return }
             self.userTranscript += text
             self.aiTranscript = ""
+            self.armInactivityTimer()
         }
 
         client.onOutputTranscription = { [weak self] text in
@@ -190,6 +210,12 @@ final class OneVoiceSessionViewModel {
         // gateway Hermes et on renvoie le resultat via sendToolResponse.
         client.onToolCall = { [weak self] toolCall in
             guard let self else { return }
+            // [Retour-veille] Une delegation Hermes = fin de l'interaction directe :
+            // apres l'ack (onTurnComplete), on repasse en veille. Porte depuis
+            // VisionClaw's GeminiSessionViewModel (onToolCall pose sleepAfterTurn).
+            if !toolCall.functionCalls.isEmpty {
+                self.sleepAfterTurn = true
+            }
             for call in toolCall.functionCalls {
                 self.toolCallRouter.handleToolCall(call) { [weak self] response in
                     self?.client.sendToolResponse(response)
