@@ -4,14 +4,14 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>$(APP_DISPLAY_NAME)</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-	<key>CFBundleDisplayName</key>
-	<string>$(APP_DISPLAY_NAME)</string>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
@@ -31,14 +31,14 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
 	<key>HermesAppGroupIdentifier</key>
 	<string>$(APP_GROUP_IDENTIFIER)</string>
 	<key>HermesKeychainService</key>
 	<string>$(KEYCHAIN_SERVICE)</string>
 	<key>HermesURLScheme</key>
 	<string>$(HERMES_URL_SCHEME)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>MWDAT</key>
 	<dict>
 		<key>AppLinkURLScheme</key>
@@ -55,22 +55,22 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Hermex needs microphone access to dictate text into the message composer and to have voice conversations with the One assistant while streaming from your Meta smart glasses.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Hermex needs camera access to capture and attach photos directly in chat, and to see through Meta smart glasses during a One voice session.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Hermex needs Bluetooth access to connect to Meta smart glasses for the One voice assistant.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Hermex needs Bluetooth access to stream audio from Meta smart glasses during a One voice session.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Hermex needs photo library access to attach images to chat messages.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Hermex needs camera access to capture and attach photos directly in chat, and to see through Meta smart glasses during a One voice session.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Hermex needs microphone access to dictate text into the message composer and to have voice conversations with the One assistant while streaming from your Meta smart glasses.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Hermex needs permission to save exported workspace images to Photos.</string>
-	<key>NSSupportsLiveActivities</key>
-	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Hermex needs photo library access to attach images to chat messages.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Hermex uses speech recognition to turn dictated audio into editable draft text.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

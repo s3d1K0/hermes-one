@@ -8,7 +8,7 @@
 //
 // Porte depuis VisionClaw (Gemini/WakeSignal.swift). On reutilise l'App Group
 // existant de hermex (cle Info.plist `HermesAppGroupIdentifier`, defaut
-// `group.com.uzairansar.hermesmobile`) plutot que d'en creer un nouveau.
+// `group.com.s3d1k.hermesone`) plutot que d'en creer un nouveau.
 //
 
 import Foundation
@@ -21,7 +21,7 @@ enum OneWakeSignal {
     /// suite d'UserDefaults partage.
     private static var suiteName: String {
         Bundle.main.object(forInfoDictionaryKey: "HermesAppGroupIdentifier") as? String
-            ?? "group.com.uzairansar.hermesmobile"
+            ?? "group.com.s3d1k.hermesone"
     }
 
     private static let key = "oneWakeRequestedAt"

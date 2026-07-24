@@ -21,7 +21,7 @@ import WidgetKit
 @available(iOS 18.0, *)
 struct OneLockControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "com.uzairansar.hermesmobile.onecontrol") {
+        StaticControlConfiguration(kind: "com.s3d1k.hermesone.onecontrol") {
             ControlWidgetButton(action: OneActivationIntent()) {
                 Label("One", systemImage: "waveform.circle.fill")
             }
@@ -77,7 +77,7 @@ struct OneWakeEntryView: View {
 
 struct OneLockWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "com.uzairansar.hermesmobile.onelock", provider: OneWakeProvider()) { _ in
+        StaticConfiguration(kind: "com.s3d1k.hermesone.onelock", provider: OneWakeProvider()) { _ in
             OneWakeEntryView()
         }
         .configurationDisplayName("Parler a One")
