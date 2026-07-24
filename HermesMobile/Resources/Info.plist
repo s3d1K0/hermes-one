@@ -52,6 +52,14 @@
 	</dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
+		<!-- Tout le trafic de l'app va vers les noeuds Tailscale de Sedik
+		     (chiffre WireGuard de bout en bout). Le canal VOIX (One -> gateway
+		     http://100.84.70.56:18789 + ws://) vise une IP tailnet 100.64/10 que
+		     NSAllowsLocalNetworking ne couvre pas et qu'ATS ne permet pas
+		     d'exempter par domaine (pas de nom de domaine). Le chat TEXTE, lui,
+		     passe deja par Tailscale Serve en HTTPS (certif .ts.net valide). -->
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
