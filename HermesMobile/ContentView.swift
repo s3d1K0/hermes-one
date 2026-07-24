@@ -14,15 +14,28 @@ struct ContentView: View {
     // re-evalue a chaque retour au premier plan. Injecte dans l'environnement
     // pour que ChatView (overlay) et le reveil externe partagent le meme objet.
     @State private var oneController = OneSessionController()
-    // [One] Anti-rebond du reveil externe : le widget peut poser le flag et
-    // poster la notification, ce qui declenche potentiellement 2 presentations
-    // rapprochees. On ignore un reveil dans la seconde qui suit le precedent
-    // (fidelite VisionClaw `toggleOne`, garde 1.0s).
+    // [One] Anti-rebond du reveil externe : `scenePhase == .active` peut se
+    // declencher en rafale (ex. bascule rapide app-switcher). `consume()` purge
+    // deja le flag (donc un reveil unique), mais on ignore aussi tout reveil dans
+    // la seconde qui suit le precedent, par securite (garde 1.0s, fidelite
+    // VisionClaw `toggleOne`).
     @State private var lastOneWakeAt: Date?
 
     var body: some View {
         content
             .environment(oneController)
+            // Overlay vocal One remonte au niveau HOTE APP (et non plus dans
+            // ChatView) : il peut ainsi apparaitre depuis N'IMPORTE QUEL ecran
+            // (liste des sessions, onboarding, reveil externe cold-start), pas
+            // seulement quand un chat est a l'ecran. Presentation pilotee par le
+            // controller (present() / onProactivePush) ; fin de session baisse le
+            // flag (anti-fantome). Cf. review vague 2, IMPORTANT-1/-2.
+            .fullScreenCover(isPresented: oneOverlayPresentedBinding) {
+                OneVoiceOverlayView(
+                    vm: oneController.viewModel,
+                    onClose: { oneController.isOverlayPresented = false }
+                )
+            }
             .onOpenURL(perform: handleOpenURL)
             .task {
                 // Ouvre le canal proactif au lancement s'il est configure, pour
@@ -66,14 +79,24 @@ struct ContentView: View {
 
     /// Consomme le flag de reveil externe pose par `OneActivationIntent` (widget /
     /// Centre de controle) et presente l'overlay vocal One. Anti-rebond 1s pour
-    /// eviter une double presentation quand le widget poste flag + notification
-    /// (fidelite VisionClaw `toggleOne`).
+    /// absorber un `scenePhase == .active` qui se declenche en rafale (fidelite
+    /// VisionClaw `toggleOne`).
     private func consumeOneWakeSignalIfNeeded() {
         guard OneWakeSignal.consume() else { return }
         let now = Date()
         if let last = lastOneWakeAt, now.timeIntervalSince(last) <= 1.0 { return }
         lastOneWakeAt = now
         oneController.present()
+    }
+
+    /// Binding vers l'etat de presentation de l'overlay One, possede par le
+    /// controller app-level. Extrait de `body` pour tenir la chaine de modifieurs
+    /// sous la limite de type-check du compilateur.
+    private var oneOverlayPresentedBinding: Binding<Bool> {
+        Binding(
+            get: { oneController.isOverlayPresented },
+            set: { oneController.isOverlayPresented = $0 }
+        )
     }
 
     private func reconcileOrphanedLiveActivities(notifiesOnCompletion: Bool) async {

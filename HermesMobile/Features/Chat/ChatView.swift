@@ -505,26 +505,6 @@ struct ChatView: View {
         )
     }
 
-    /// Binding vers l'etat de presentation de l'overlay One, possede par le
-    /// controller app-level. Extrait de `body` pour tenir sous la limite de
-    /// type-check du compilateur (#316).
-    private var oneOverlayPresentedBinding: Binding<Bool> {
-        Binding(
-            get: { oneController.isOverlayPresented },
-            set: { oneController.isOverlayPresented = $0 }
-        )
-    }
-
-    /// Overlay vocal One presente en plein ecran, branche sur la session
-    /// partagee du controller app-level. Extrait de `body` (chaine de modifieurs
-    /// deja a la limite de type-check, #316).
-    private var oneVoiceOverlay: some View {
-        OneVoiceOverlayView(
-            vm: oneController.viewModel,
-            onClose: { oneController.isOverlayPresented = false }
-        )
-    }
-
     private func transcriptMediaPreviewView(for item: TranscriptMediaPreviewItem) -> some View {
         TranscriptMediaPreviewView(
             server: server,
@@ -690,9 +670,6 @@ struct ChatView: View {
             }
             .fullScreenCover(item: $selectableResponseText) { selectableText in
                 SelectableResponseTextView(selection: selectableText)
-            }
-            .fullScreenCover(isPresented: oneOverlayPresentedBinding) {
-                oneVoiceOverlay
             }
             .sheet(item: $attachmentPreviewItem) { item in
                 ChatAttachmentPreviewView(

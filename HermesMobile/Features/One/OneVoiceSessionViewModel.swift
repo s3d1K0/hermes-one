@@ -20,6 +20,12 @@ final class OneVoiceSessionViewModel {
     var userTranscript: String = ""
     var aiTranscript: String = ""
 
+    /// Notifie l'hote (OneSessionController) que la session s'est terminee
+    /// (stop() / retour-veille / perte de connexion). Le controller y baisse
+    /// `isOverlayPresented` pour eviter un overlay fantome. Le ViewModel n'a pas
+    /// de reference au controller : ce closure est le seul lien remontant.
+    var onSessionEnded: (() -> Void)?
+
     private let client = OneGeminiLiveClient()
     private let audio = OneAudioController()
     private let voiceFeedback = OneVoiceFeedback()
@@ -54,6 +60,10 @@ final class OneVoiceSessionViewModel {
 
     func start() async {
         guard phase != .connecting else { return }
+        // Repart d'un minuteur d'inactivite propre : une ouverture precedente a pu
+        // en laisser un arme (porte depuis VisionClaw startSession()).
+        inactivityTimer?.invalidate()
+        inactivityTimer = nil
         phase = .connecting
         userTranscript = ""
         aiTranscript = ""
@@ -98,6 +108,12 @@ final class OneVoiceSessionViewModel {
         }
 
         phase = .listening
+        // Arme le minuteur d'inactivite des l'entree en ecoute : une ouverture
+        // accidentelle (widget / poche / reveil externe) sans aucune parole
+        // repasse quand meme en veille apres OneSettings.autoStandbySeconds, au
+        // lieu de laisser le micro ouvert indefiniment (porte depuis VisionClaw
+        // startSession() qui arme armActiveInactivityTimer() en fin de demarrage).
+        armInactivityTimer()
         startVideoIfEnabled()
     }
 
@@ -111,6 +127,10 @@ final class OneVoiceSessionViewModel {
         videoController.onVideoFrame = nil
         videoController.stop()
         phase = .idle
+        // Session terminee -> l'hote baisse l'overlay (anti-fantome). Synchrone
+        // pour que l'overlay disparaisse tout de suite, avant meme l'annonce
+        // audio "One desactive" ci-dessous.
+        onSessionEnded?()
 
         guard wasActive else {
             try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
@@ -203,7 +223,14 @@ final class OneVoiceSessionViewModel {
 
         client.onDisconnected = { [weak self] reason in
             guard let self else { return }
+            // Perte de connexion = fin de session : coupe le minuteur d'inactivite
+            // (plus de session a surveiller) et notifie l'hote pour baisser
+            // l'overlay (un push lu hors chat ne doit pas laisser un overlay arme
+            // sur un ecran d'erreur). Cf. VisionClaw onDisconnected.
+            self.inactivityTimer?.invalidate()
+            self.inactivityTimer = nil
             self.phase = .error(reason ?? "Connexion perdue")
+            self.onSessionEnded?()
         }
 
         // Delegation d'outils : Gemini appelle `execute`, on route vers le

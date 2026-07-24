@@ -52,7 +52,15 @@ struct OneVoiceOverlayView: View {
             .padding(.top, 48)
         }
         .task {
-            await vm.start()
+            // Filet idempotent : le demarrage est pilote par OneSessionController
+            // (present() / onProactivePush), pas par ce .task. On ne (re)demarre
+            // ici que si la session est encore au repos (overlay presente sans
+            // qu'un start ait ete declenche) ; sinon no-op, pour un chemin de
+            // demarrage unique et deterministe (fin de la course de double-start
+            // heritee de la vague 2).
+            if vm.phase == .idle {
+                await vm.start()
+            }
         }
         .onDisappear {
             vm.stop()

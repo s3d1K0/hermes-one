@@ -34,8 +34,23 @@ final class OneSessionController {
     // reveiller One meme quand l'overlay est ferme.
     private let eventClient = OneEventClient()
     private var proactiveChannelConnected = false
+    // Adresse (host|port|token) sur laquelle le canal proactif est actuellement
+    // connecte. Sert a detecter un changement de reglages gateway : si l'adresse
+    // change alors que le canal est connecte, on DECONNECTE puis RECONNECTE pour
+    // re-pointer la socket (cf. `refreshProactiveChannel`).
+    private var connectedGatewayAddress: String?
 
-    init() {}
+    init() {
+        // [Fin de session -> overlay app-level] Le ViewModel n'a pas de reference
+        // au controller ; il notifie via ce closure quand la session se termine
+        // (stop() / retour-veille / perte de connexion). On baisse alors le flag
+        // pour eviter un overlay fantome (un push lu en voix hors chat ne doit pas
+        // laisser un overlay arme qui represente + relance une session au prochain
+        // affichage). Cf. review vague 2, IMPORTANT-2.
+        viewModel.onSessionEnded = { [weak self] in
+            self?.isOverlayPresented = false
+        }
+    }
 
     // MARK: - Canal proactif (gateway Hermes / OpenClaw)
 
@@ -49,6 +64,7 @@ final class OneSessionController {
         }
         guard !proactiveChannelConnected else { return }
         proactiveChannelConnected = true
+        connectedGatewayAddress = currentGatewayAddress()
         eventClient.onNotification = { [weak self] text in
             guard let self else { return }
             Task { @MainActor in
@@ -62,25 +78,51 @@ final class OneSessionController {
     func disconnectProactiveChannel() {
         guard proactiveChannelConnected else { return }
         proactiveChannelConnected = false
+        connectedGatewayAddress = nil
         eventClient.onNotification = nil
         eventClient.disconnect()
     }
 
-    /// Re-evalue l'etat du canal proactif apres un changement de reglages ou au
-    /// retour au premier plan : le connecte ou le coupe selon les reglages actuels.
+    /// Re-evalue l'etat du canal proactif apres un changement de reglages
+    /// (depuis les Reglages, cf. `SettingsView`) ou au retour au premier plan.
+    /// - Si les notifications sont coupees / le gateway non configure : deconnecte.
+    /// - Si l'adresse gateway (host/port/token) a CHANGE alors que le canal est
+    ///   deja connecte : DECONNECTE puis RECONNECTE pour re-pointer la socket
+    ///   (sinon le canal reste colle a l'ancienne adresse jusqu'au kill de l'app).
+    /// - Sinon connecte si pas deja connecte.
     func refreshProactiveChannel() {
-        if OneSettings.proactiveNotificationsEnabled, OneConfig.isGatewayConfigured {
-            connectProactiveChannelIfConfigured()
-        } else {
+        guard OneSettings.proactiveNotificationsEnabled, OneConfig.isGatewayConfigured else {
+            disconnectProactiveChannel()
+            return
+        }
+        if proactiveChannelConnected, connectedGatewayAddress != currentGatewayAddress() {
+            // Adresse changee -> re-pointer la socket.
             disconnectProactiveChannel()
         }
+        connectProactiveChannelIfConfigured()
+    }
+
+    /// Empreinte de l'adresse gateway courante (host/port/token) pour detecter un
+    /// changement de reglages. Le jeton fait partie de l'empreinte : re-saisir le
+    /// jeton sans changer host/port doit aussi re-authentifier la socket.
+    private func currentGatewayAddress() -> String {
+        "\(OneConfig.gatewayHost)|\(OneConfig.gatewayPort)|\(OneConfig.gatewayToken)"
     }
 
     // MARK: - Presentation / reveil
 
-    /// Ouvre l'overlay vocal One (bouton du composer, App Intent, widget...).
+    /// Ouvre l'overlay vocal One (bouton du composer, App Intent, widget...) ET
+    /// demarre la session. Chemin de demarrage unique et deterministe : c'est le
+    /// controller qui declenche `start()`, pas le `.task` de l'overlay (celui-ci
+    /// n'est plus qu'un filet idempotent : il ne (re)demarre que si la session est
+    /// encore au repos). On evite ainsi la course de double-start heritee de la
+    /// vague 2 (overlay.task + onProactivePush demarraient tous deux). Garde
+    /// `.idle` : re-presenter une session deja active ne la relance pas.
     func present() {
         isOverlayPresented = true
+        if viewModel.phase == .idle {
+            Task { await viewModel.start() }
+        }
     }
 
     /// Reponse poussee par Hermes (heartbeat/cron) : presente l'overlay puis
