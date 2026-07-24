@@ -28,6 +28,9 @@ struct KeychainStore: KeychainStoring {
         // Gemini Live API key for the "One" voice module (fork addition): a
         // secret, so it lives in the Keychain rather than UserDefaults/OneSettings.
         case oneGeminiAPIKey = "one_gemini_api_key"
+        // Hermes gateway (OpenClaw) token for One's proactive push channel
+        // (fork addition): a secret, so it lives in the Keychain too.
+        case oneGatewayToken = "one_gateway_token"
     }
 
     private let keychain: Keychain

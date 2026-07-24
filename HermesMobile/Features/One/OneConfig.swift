@@ -62,4 +62,19 @@ enum OneConfig {
     static var isConfigured: Bool {
         apiKey != "YOUR_GEMINI_API_KEY" && !apiKey.isEmpty
     }
+
+    // MARK: - Gateway Hermes (push proactif, OpenClaw)
+
+    /// Hote/port/jeton du canal d'evenements du gateway Hermes (heartbeat/cron),
+    /// portes depuis VisionClaw (GeminiConfig.openClawHost/openClawPort/
+    /// openClawGatewayToken). Reglage utilisateur (Reglages > One) s'il existe,
+    /// sinon `OneSecrets` (dev local, fichier gitignore).
+    static var gatewayHost: String { OneSettings.gatewayHost }
+    static var gatewayPort: Int { OneSettings.gatewayPort }
+    static var gatewayToken: String { OneSettings.gatewayToken() }
+
+    static var isGatewayConfigured: Bool {
+        gatewayToken != "YOUR_OPENCLAW_GATEWAY_TOKEN" && !gatewayToken.isEmpty
+            && gatewayHost != "http://YOUR_MAC_HOSTNAME.local"
+    }
 }

@@ -23,6 +23,17 @@ final class OneVoiceSessionViewModel {
     private let client = OneGeminiLiveClient()
     private let audio = OneAudioController()
     private let voiceFeedback = OneVoiceFeedback()
+    // [Push proactif] Canal d'evenements du gateway Hermes (heartbeat/cron),
+    // porte depuis VisionClaw's GeminiSessionViewModel (eventClient + deliverProactive).
+    private let eventClient = OneEventClient()
+    private var eventStreamConnected = false
+    // Repasser en veille (stop()) au prochain tour Gemini termine, pour une
+    // lecture de push proactif (evite de laisser le micro ouvert derriere).
+    private var sleepAfterTurn = false
+
+    deinit {
+        eventClient.disconnect()
+    }
 
     func start() async {
         guard phase != .connecting else { return }
@@ -70,6 +81,7 @@ final class OneVoiceSessionViewModel {
         }
 
         phase = .listening
+        connectProactiveChannelIfNeeded()
     }
 
     func stop() {
@@ -127,8 +139,15 @@ final class OneVoiceSessionViewModel {
 
         client.onTurnComplete = { [weak self] in
             guard let self else { return }
-            self.phase = .listening
             self.userTranscript = ""
+            // [Push proactif] Apres la lecture d'un push Hermes, on repasse en
+            // veille au lieu de laisser le micro ouvert.
+            if self.sleepAfterTurn {
+                self.sleepAfterTurn = false
+                self.stop()
+            } else {
+                self.phase = .listening
+            }
         }
 
         client.onInputTranscription = { [weak self] text in
@@ -146,5 +165,40 @@ final class OneVoiceSessionViewModel {
             guard let self else { return }
             self.phase = .error(reason ?? "Connexion perdue")
         }
+    }
+
+    // MARK: - Push proactif (gateway Hermes / OpenClaw)
+
+    /// Ouvre le canal d'evenements du gateway Hermes si le reglage "notifications
+    /// proactives" est actif (Reglages > One). Porte depuis VisionClaw's
+    /// GeminiSessionViewModel.connectEventStreamIfNeeded().
+    private func connectProactiveChannelIfNeeded() {
+        guard OneSettings.proactiveNotificationsEnabled else { return }
+        guard !eventStreamConnected else { return }
+        eventStreamConnected = true
+        eventClient.onNotification = { [weak self] text in
+            guard let self else { return }
+            Task { @MainActor in
+                await self.deliverProactive(text)
+            }
+        }
+        eventClient.connect()
+    }
+
+    /// Reponse poussee par Hermes (heartbeat/cron) : reveille Gemini si besoin,
+    /// la fait lire, puis repasse en veille. Porte depuis VisionClaw's
+    /// GeminiSessionViewModel.deliverProactive().
+    func deliverProactive(_ text: String) async {
+        guard OneSettings.proactiveNotificationsEnabled else { return }
+
+        if phase != .listening && phase != .speaking {
+            await start()
+        }
+        guard phase == .listening || phase == .speaking else {
+            phase = .error("Reveil impossible pour lire la reponse d'Hermes")
+            return
+        }
+        sleepAfterTurn = true
+        client.sendText(text)
     }
 }

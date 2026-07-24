@@ -288,6 +288,7 @@
 		E6423DA4C2BC43D9982AB49D /* OneVoiceSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78FC5BB89F514545A979D8BA /* OneVoiceSessionViewModel.swift */; };
 		DC2F6AAD3C6045D793F0D284 /* OneVoiceFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A20150EC1BE4479B89FB3B6 /* OneVoiceFeedback.swift */; };
 		81F29D841025407BA00632F8 /* OneSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4485D22281BF4737BC7AF5FD /* OneSettings.swift */; };
+		49E946AB0E914C92BCF7B09C /* OneEventClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22118AA043E948828C1AD1F7 /* OneEventClient.swift */; };
 		C21300000000000000000007 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = C21300000000000000000008 /* MarkdownUI */; };
 		B5A220000000000000000005 /* ChatMarkerMessageClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A220000000000000000006 /* ChatMarkerMessageClassifierTests.swift */; };
 		B5A100000000000000000004 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B5A100000000000000000014 /* PrivacyInfo.xcprivacy */; };
@@ -658,6 +659,7 @@
 		78FC5BB89F514545A979D8BA /* OneVoiceSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneVoiceSessionViewModel.swift; sourceTree = "<group>"; };
 		7A20150EC1BE4479B89FB3B6 /* OneVoiceFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneVoiceFeedback.swift; sourceTree = "<group>"; };
 		4485D22281BF4737BC7AF5FD /* OneSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneSettings.swift; sourceTree = "<group>"; };
+		22118AA043E948828C1AD1F7 /* OneEventClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneEventClient.swift; sourceTree = "<group>"; };
 		B5A220000000000000000006 /* ChatMarkerMessageClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMarkerMessageClassifierTests.swift; sourceTree = "<group>"; };
 		B5A100000000000000000017 /* HermesShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HermesShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A04500000000000000000010 /* AgentRunActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRunActivityAttributes.swift; sourceTree = "<group>"; };
@@ -996,6 +998,7 @@
 				78FC5BB89F514545A979D8BA /* OneVoiceSessionViewModel.swift */,
 				7A20150EC1BE4479B89FB3B6 /* OneVoiceFeedback.swift */,
 				4485D22281BF4737BC7AF5FD /* OneSettings.swift */,
+				22118AA043E948828C1AD1F7 /* OneEventClient.swift */,
 			);
 			path = One;
 			sourceTree = "<group>";
@@ -1654,6 +1657,7 @@
 				E6423DA4C2BC43D9982AB49D /* OneVoiceSessionViewModel.swift in Sources */,
 				DC2F6AAD3C6045D793F0D284 /* OneVoiceFeedback.swift in Sources */,
 				81F29D841025407BA00632F8 /* OneSettings.swift in Sources */,
+				49E946AB0E914C92BCF7B09C /* OneEventClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

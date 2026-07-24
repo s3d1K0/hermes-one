@@ -15,6 +15,8 @@ enum OneSettings {
     static let videoStreamingEnabledKey = "one.videoStreamingEnabled"
     static let proactiveNotificationsEnabledKey = "one.proactiveNotificationsEnabled"
     static let autoStandbySecondsKey = "one.autoStandbySeconds"
+    static let gatewayHostKey = "one.gatewayHost"
+    static let gatewayPortKey = "one.gatewayPort"
 
     static let defaultAutoStandbySeconds = 180
 
@@ -70,10 +72,54 @@ enum OneSettings {
         set { defaults.set(newValue, forKey: videoStreamingEnabledKey) }
     }
 
-    /// Reserve pour les notifications proactives (pas encore portees dans ce module).
+    /// Active le canal d'evenements du gateway Hermes (push proactif) : quand
+    /// vrai, `OneVoiceSessionViewModel` se connecte a `OneEventClient` et reveille
+    /// Gemini pour lire les heartbeats/cron pousses (cf. deliverProactive).
     static var proactiveNotificationsEnabled: Bool {
         get { defaults.object(forKey: proactiveNotificationsEnabledKey) as? Bool ?? true }
         set { defaults.set(newValue, forKey: proactiveNotificationsEnabledKey) }
+    }
+
+    // MARK: - Gateway Hermes (push proactif, secret cote jeton)
+
+    /// Hote du gateway Hermes (OpenClaw) pour le canal d'evenements proactif.
+    /// Non sensible : vit dans UserDefaults, repli sur `OneSecrets.gatewayHost`.
+    static var gatewayHost: String {
+        get {
+            let stored = defaults.string(forKey: gatewayHostKey) ?? ""
+            return stored.isEmpty ? OneSecrets.gatewayHost : stored
+        }
+        set { defaults.set(newValue, forKey: gatewayHostKey) }
+    }
+
+    /// Port du gateway Hermes (OpenClaw). Repli sur `OneSecrets.gatewayPort`.
+    static var gatewayPort: Int {
+        get {
+            let stored = defaults.integer(forKey: gatewayPortKey)
+            return stored != 0 ? stored : OneSecrets.gatewayPort
+        }
+        set { defaults.set(newValue, forKey: gatewayPortKey) }
+    }
+
+    /// Charge le jeton du gateway Hermes (OpenClaw) depuis le Keychain (secret,
+    /// comme la cle API Gemini) ; repli sur `OneSecrets.gatewayToken`.
+    static func gatewayToken(keychain: any KeychainStoring = KeychainStore()) -> String {
+        let stored = (try? keychain.load(.oneGatewayToken)) ?? nil
+        if let stored, !stored.isEmpty {
+            return stored
+        }
+        return OneSecrets.gatewayToken
+    }
+
+    /// Enregistre le jeton du gateway Hermes dans le Keychain. Une valeur vide
+    /// supprime l'entree (retour au repli `OneSecrets.gatewayToken`).
+    static func setGatewayToken(_ value: String, keychain: any KeychainStoring = KeychainStore()) {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            try? keychain.delete(.oneGatewayToken)
+        } else {
+            try? keychain.save(trimmed, forKey: .oneGatewayToken)
+        }
     }
 
     // MARK: - Veille auto
