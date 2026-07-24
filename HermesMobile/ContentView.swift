@@ -14,6 +14,11 @@ struct ContentView: View {
     // re-evalue a chaque retour au premier plan. Injecte dans l'environnement
     // pour que ChatView (overlay) et le reveil externe partagent le meme objet.
     @State private var oneController = OneSessionController()
+    // [One] Anti-rebond du reveil externe : le widget peut poser le flag et
+    // poster la notification, ce qui declenche potentiellement 2 presentations
+    // rapprochees. On ignore un reveil dans la seconde qui suit le precedent
+    // (fidelite VisionClaw `toggleOne`, garde 1.0s).
+    @State private var lastOneWakeAt: Date?
 
     var body: some View {
         content
@@ -48,11 +53,27 @@ struct ContentView: View {
                 // Re-evalue le canal proactif : les reglages One (host/port/token,
                 // toggle notifications) ont pu changer pendant que l'app etait en fond.
                 oneController.refreshProactiveChannel()
+                // Reveil externe (widget / Centre de controle / Raccourcis) : l'App
+                // Intent a pose un flag dans l'App Group. On le consomme au premier
+                // plan et on presente l'overlay vocal One, avec anti-rebond 1s.
+                consumeOneWakeSignalIfNeeded()
                 importPendingSharedDraftIfAvailable()
                 // #248: the foreground pass stays silent — the in-session completion
                 // paths own notifications while the app is alive.
                 Task { await reconcileOrphanedLiveActivities(notifiesOnCompletion: false) }
             }
+    }
+
+    /// Consomme le flag de reveil externe pose par `OneActivationIntent` (widget /
+    /// Centre de controle) et presente l'overlay vocal One. Anti-rebond 1s pour
+    /// eviter une double presentation quand le widget poste flag + notification
+    /// (fidelite VisionClaw `toggleOne`).
+    private func consumeOneWakeSignalIfNeeded() {
+        guard OneWakeSignal.consume() else { return }
+        let now = Date()
+        if let last = lastOneWakeAt, now.timeIntervalSince(last) <= 1.0 { return }
+        lastOneWakeAt = now
+        oneController.present()
     }
 
     private func reconcileOrphanedLiveActivities(notifiesOnCompletion: Bool) async {

@@ -6,6 +6,10 @@ import WidgetKit
 struct HermesLiveActivityWidgetBundle: WidgetBundle {
     var body: some Widget {
         AgentRunLiveActivityWidget()
+        // [One] Reveil externe de One (hors bouton du chat) : widget ecran
+        // verrouille / ecran d'accueil, et controle Centre de controle (iOS 18+).
+        OneLockWidget()
+        if #available(iOS 18.0, *) { OneLockControl() }
     }
 }
 
