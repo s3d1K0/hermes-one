@@ -65,10 +65,10 @@ final class OneSessionController {
         guard !proactiveChannelConnected else { return }
         proactiveChannelConnected = true
         connectedGatewayAddress = currentGatewayAddress()
-        eventClient.onNotification = { [weak self] text in
+        eventClient.onNotification = { [weak self] spoken, details in
             guard let self else { return }
             Task { @MainActor in
-                self.onProactivePush(text)
+                self.onProactivePush(spoken, details: details)
             }
         }
         eventClient.connect()
@@ -127,9 +127,12 @@ final class OneSessionController {
 
     /// Reponse poussee par Hermes (heartbeat/cron) : presente l'overlay puis
     /// delegue au ViewModel la lecture (`deliverProactive` reveille Gemini si
-    /// besoin, fait lire la reponse, puis repasse en veille apres le tour).
-    func onProactivePush(_ text: String) {
+    /// besoin, fait lire `spoken`, puis repasse en veille apres le tour). `details`
+    /// (resultat complet optionnel) est transmis au ViewModel qui le route vers une
+    /// notification locale iOS (consultable hors-voix). `details` est nil tant que le
+    /// serveur ne l'envoie pas (retro-compat : comportement actuel inchange).
+    func onProactivePush(_ text: String, details: String? = nil) {
         isOverlayPresented = true
-        Task { await viewModel.deliverProactive(text) }
+        Task { await viewModel.deliverProactive(text, details: details) }
     }
 }

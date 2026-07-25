@@ -36,6 +36,40 @@ enum OneLocalTools {
         }
     }
 
+    // MARK: - Push proactif : detail complet -> notification locale
+
+    /// [Contrat de sortie, pattern Siri] Poste une notification locale iOS portant le
+    /// detail COMPLET (`details`) d'un resultat pousse par Hermes, pendant que One en
+    /// lit a voix haute la version orale (`spoken`). Objectif : rendre le detail
+    /// consultable hors-voix (centre de notifications) sans encombrer l'oral.
+    ///
+    /// Tolerant et non bloquant : un `details` vide est ignore, un refus/absence
+    /// d'autorisation n'a aucun effet visible (pas de crash, pas d'erreur remontee),
+    /// et l'echec de programmation est avale (le canal vocal reste la source de verite).
+    /// Reutilise `requestAuthorizationIfNeeded()` (jamais de second prompt apres refus).
+    static func postProactiveDetails(_ details: String) async {
+        let trimmed = details.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        let granted = await requestAuthorizationIfNeeded()
+        guard granted else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = "Hermes"
+        // Tronque raisonnablement : iOS n'affiche qu'un extrait, et une payload de
+        // notification a une taille limitee. Le detail integral vivra dans le canal
+        // app/chat plus tard ; ici la notification sert de rappel consultable.
+        content.body = String(trimmed.prefix(2000))
+        content.sound = .default
+        content.userInfo = ["source": "one.proactive", "kind": "details"]
+
+        // trigger nil = declenchement immediat : la notif apparait tout de suite et
+        // reste dans le centre de notifications pour consultation hors-voix.
+        let request = UNNotificationRequest(
+            identifier: "one-details-\(UUID().uuidString)", content: content, trigger: nil)
+        try? await UNUserNotificationCenter.current().add(request)
+    }
+
     // MARK: - get_current_time
 
     private static func getCurrentTime() -> OneToolResult {

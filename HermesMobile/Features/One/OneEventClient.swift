@@ -6,7 +6,11 @@ import Foundation
 /// `onNotification` pour que One puisse "reveiller" Gemini et lire la reponse
 /// (cf. OneVoiceSessionViewModel.deliverProactive).
 final class OneEventClient {
-    var onNotification: ((String) -> Void)?
+    /// Remonte un push proactif : `spoken` = texte oral pret a lire (deja cadre par
+    /// l'appelant), `details` = resultat complet optionnel (routine vers une
+    /// notification locale iOS). `details` est nil tant que le serveur n'envoie pas
+    /// encore le champ (retro-compat, cf. `handleHeartbeatEvent`).
+    var onNotification: ((_ spoken: String, _ details: String?) -> Void)?
 
     private var webSocketTask: URLSessionWebSocketTask?
     private var session: URLSession?
@@ -159,29 +163,48 @@ final class OneEventClient {
 
     private func handleHeartbeatEvent(_ payload: [String: Any]) {
         let status = payload["status"] as? String ?? ""
-        // Ne notifier que si le heartbeat a un vrai contenu (pas les silencieux).
-        guard status == "sent", let preview = payload["preview"] as? String, !preview.isEmpty else {
-            return
-        }
+        // [Contrat de sortie, pattern Siri] `spoken` (2-3 phrases orales pretes a
+        // dire) est prioritaire ; `preview` reste le repli retro-compatible tant que
+        // le serveur ne l'envoie pas encore. On ne notifie que si le heartbeat a un
+        // vrai contenu oral (pas les silencieux/vides).
+        let spoken = nonEmptyString(payload["spoken"])
+        let preview = nonEmptyString(payload["preview"])
+        guard status == "sent", let toSpeak = spoken ?? preview else { return }
 
         let silent = payload["silent"] as? Bool ?? false
         guard !silent else { return }
 
-        NSLog("[OneEventWS] Heartbeat notification: %@", String(preview.prefix(100)))
-        onNotification?("[Notification from your assistant] \(preview)")
+        // `details` (resultat complet) : optionnel, route vers une notification locale
+        // par le consommateur. nil tant que le serveur ne l'envoie pas (retro-compat).
+        let details = nonEmptyString(payload["details"])
+
+        NSLog("[OneEventWS] Heartbeat notification: %@", String(toSpeak.prefix(100)))
+        onNotification?("[Notification from your assistant] \(toSpeak)", details)
     }
 
     private func handleCronEvent(_ payload: [String: Any]) {
         let action = payload["action"] as? String ?? ""
         guard action == "finished" else { return }
 
-        let summary = payload["summary"] as? String
-            ?? payload["result"] as? String
-            ?? ""
-        guard !summary.isEmpty else { return }
+        // [Contrat de sortie] `spoken` prioritaire ; repli retro-compat sur
+        // summary/result (le texte actuel) tant que le serveur ne l'envoie pas.
+        let spoken = nonEmptyString(payload["spoken"])
+        let summary = nonEmptyString(payload["summary"]) ?? nonEmptyString(payload["result"])
+        guard let toSpeak = spoken ?? summary else { return }
 
-        NSLog("[OneEventWS] Cron notification: %@", String(summary.prefix(100)))
-        onNotification?("[Scheduled update] \(summary)")
+        let details = nonEmptyString(payload["details"])
+
+        NSLog("[OneEventWS] Cron notification: %@", String(toSpeak.prefix(100)))
+        onNotification?("[Scheduled update] \(toSpeak)", details)
+    }
+
+    /// Decodage tolerant d'un champ texte optionnel du payload (spoken/details/
+    /// preview/summary/result) : retourne la chaine non vide apres trim, sinon nil.
+    /// Ne crashe jamais sur un champ absent ou d'un autre type.
+    private func nonEmptyString(_ value: Any?) -> String? {
+        guard let s = value as? String else { return nil }
+        let trimmed = s.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 
     private func scheduleReconnect() {

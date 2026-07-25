@@ -287,8 +287,22 @@ final class OneVoiceSessionViewModel {
     /// Reponse poussee par Hermes (heartbeat/cron) : reveille Gemini si besoin,
     /// la fait lire, puis repasse en veille. Porte depuis VisionClaw's
     /// GeminiSessionViewModel.deliverProactive().
-    func deliverProactive(_ text: String) async {
+    ///
+    /// [Contrat de sortie, pattern Siri] `text` est le texte ORAL a lire (`spoken`
+    /// cote serveur, avec repli preview/texte cote OneEventClient). `details` est le
+    /// resultat COMPLET optionnel : s'il est present et non vide, on le route vers une
+    /// notification locale iOS (consultable hors-voix) sans bloquer la lecture vocale.
+    /// `details` est nil tant que le serveur ne l'envoie pas : le comportement actuel
+    /// (lecture seule) reste alors strictement inchange.
+    func deliverProactive(_ text: String, details: String? = nil) async {
         guard OneSettings.proactiveNotificationsEnabled else { return }
+
+        // Detail complet -> notification locale iOS, en fire-and-forget : ne bloque
+        // jamais la lecture vocale (ni sur un eventuel prompt d'autorisation, ni sur
+        // un refus). Le canal app/chat consommera `details` plus tard.
+        if let details, !details.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            Task { await OneLocalTools.postProactiveDetails(details) }
+        }
 
         if phase != .listening && phase != .speaking {
             await start()
