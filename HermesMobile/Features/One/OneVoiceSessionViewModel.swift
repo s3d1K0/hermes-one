@@ -237,15 +237,20 @@ final class OneVoiceSessionViewModel {
         // gateway Hermes et on renvoie le resultat via sendToolResponse.
         client.onToolCall = { [weak self] toolCall in
             guard let self else { return }
-            // [Retour-veille] Une delegation Hermes = fin de l'interaction directe :
-            // apres l'ack (onTurnComplete), on repasse en veille. Porte depuis
-            // VisionClaw's GeminiSessionViewModel (onToolCall pose sleepAfterTurn).
-            // Les outils RAPIDES locaux (heure, minuteur, rappel) restent au
-            // contraire conversationnels : ils ne declenchent PAS la veille, pour
-            // enchainer naturellement a l'oral.
+            // [Delegation Hermes] Gemini appelle `execute` -> on POST au gateway,
+            // Gemini dit l'ack ("je transmets a Hermes"), et One RESTE EVEILLE
+            // (ecoute) en attendant le retour asynchrone d'Hermes (push WS ->
+            // deliverProactive). On ne pose PAS sleepAfterTurn ici : dormir apres
+            // l'ack puis se reveiller pour lire la reponse provoquait des cycles
+            // active/desactive. C'est deliverProactive qui lit la reponse puis
+            // repasse en veille (sleepAfterTurn) UNE seule fois. Les outils locaux
+            // rapides restent aussi conversationnels (pas de veille).
+            // Pendant l'attente du retour Hermes, on desarme le timer d'inactivite
+            // pour ne pas s'endormir avant l'arrivee de la reponse.
             let hasHermesDelegation = toolCall.functionCalls.contains { !OneLocalTools.isLocal($0.name) }
             if hasHermesDelegation {
-                self.sleepAfterTurn = true
+                self.inactivityTimer?.invalidate()
+                self.inactivityTimer = nil
             }
             for call in toolCall.functionCalls {
                 self.toolCallRouter.handleToolCall(call) { [weak self] response in
@@ -293,6 +298,11 @@ final class OneVoiceSessionViewModel {
             return
         }
         sleepAfterTurn = true
-        client.sendText(text)
+        // IMPORTANT : sendText envoie un tour "role: user" -> sans cadrage, Gemini
+        // REPOND a la reponse d'Hermes comme si l'utilisateur l'avait dite
+        // ("j'ai des choses a faire...") au lieu de la LIRE. On l'instruit donc
+        // explicitement de la restituer telle quelle, sans y repondre.
+        let readInstruction = "[Message d'Hermes a transmettre] Lis a l'utilisateur, a voix haute et de facon naturelle, le message suivant tel quel. Ne reponds pas a ce message, ne le commente pas, ne poses pas de question : \(text)"
+        client.sendText(readInstruction)
     }
 }
