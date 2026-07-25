@@ -1214,34 +1214,17 @@ struct SessionListView: View {
 struct HermesHeaderLogo: View {
     let selectedColor: Color
 
-    private static let aspectRatio = 643.0 / 185.0
-
+    // [Rebrand One] Ancien wordmark image "HERMEX" (calques hermes-*) remplace par
+    // un texte "One" style, teinte par la couleur d'en-tete choisie. minimumScaleFactor
+    // + lineLimit pour tenir dans la zone que le parent alloue au logo.
     var body: some View {
-        ZStack {
-            Image("hermes-fill-mask")
-                .renderingMode(.template)
-                .resizable()
-                .scaledToFit()
-                .foregroundStyle(selectedColor)
-
-            Image("hermes-shading-overlay")
-                .resizable()
-                .scaledToFit()
-                .blendMode(.multiply)
-
-            Image("hermes-highlight")
-                .resizable()
-                .scaledToFit()
-                .blendMode(.screen)
-
-            Image("hermes-outline-shadow")
-                .resizable()
-                .scaledToFit()
-        }
-        .aspectRatio(Self.aspectRatio, contentMode: .fit)
-        .compositingGroup()
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("HERMEX")
+        Text("One")
+            .font(.system(size: 34, weight: .bold, design: .rounded))
+            .foregroundStyle(selectedColor)
+            .lineLimit(1)
+            .minimumScaleFactor(0.3)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("One")
     }
 }
 
