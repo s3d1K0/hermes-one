@@ -109,7 +109,6 @@
 		2D6135C8A50145EA9A149FAB /* OneConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A03BBB6D22408C9372D6C9 /* OneConfig.swift */; };
 		2D84B6BDD4CE3484D0FFCCCA /* OneSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CDB544EBA7EA3E8932F970F /* OneSessionController.swift */; };
 		36CD9EF0B0734E5F8C28BB92 /* SlashCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA59130ED4141049177576C /* SlashCommand.swift */; };
-		3A14FA3A4B17EB9130D478AF /* MWDATMockDevice in Frameworks */ = {isa = PBXBuildFile; productRef = 4FBAB47B6CB310F759DCFD4E /* MWDATMockDevice */; };
 		3CB1E8F307FD40F28D02ABDA /* OneAudioController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DBB7885ADC44029A6718330 /* OneAudioController.swift */; };
 		3F91D2A54B9A4F66A2C01001 /* Cron.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F91D2A54B9A4F66A2C01011 /* Cron.swift */; };
 		3F91D2A54B9A4F66A2C01002 /* TasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F91D2A54B9A4F66A2C01012 /* TasksView.swift */; };
@@ -716,7 +715,6 @@
 				5417A7400000000000000092 /* SwiftMath in Frameworks */,
 				172A03DCCC9A080205904691 /* MWDATCore in Frameworks */,
 				C19A6E8DE46DB275E85D777A /* MWDATCamera in Frameworks */,
-				3A14FA3A4B17EB9130D478AF /* MWDATMockDevice in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1333,7 +1331,6 @@
 				5417A7400000000000000091 /* SwiftMath */,
 				F725891F282BAD787A3C240A /* MWDATCore */,
 				0845EFBEE6F92BE7D6D731DA /* MWDATCamera */,
-				4FBAB47B6CB310F759DCFD4E /* MWDATMockDevice */,
 			);
 			productName = HermesMobile;
 			productReference = 1A2B3C4D5E6F700000000010 /* HermesMobile.app */;
@@ -1994,6 +1991,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 38DPG626V2;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HermesMobile/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -2002,7 +2000,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.4;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.s3d1k.hermesone;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -2023,6 +2021,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 38DPG626V2;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HermesMobile/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -2031,7 +2030,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.4;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.s3d1k.hermesone;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -2341,11 +2340,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1A2B3C4D5E6F700000000099 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
 			productName = KeychainAccess;
-		};
-		4FBAB47B6CB310F759DCFD4E /* MWDATMockDevice */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B45834CA219566455DFD3875 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
-			productName = MWDATMockDevice;
 		};
 		5417A7400000000000000091 /* SwiftMath */ = {
 			isa = XCSwiftPackageProductDependency;

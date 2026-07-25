@@ -52,23 +52,13 @@
 	</dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<!-- Le canal VOIX (One -> gateway http:// + ws://) vise le mac mini via
-		     son nom Tailscale (mac-mini-*.tail921235.ts.net), pas l'IP brute :
-		     ATS ne matche une exception QUE sur un nom de domaine, pas une IP, et
-		     NSAllowsArbitraryLoads seul ne couvre pas le ws:// vers une IP (bloque
-		     -1022). Exception ciblee sur le domaine tailnet -> http + ws autorises
-		     en clair vers ce domaine uniquement (trafic chiffre WireGuard de toute
-		     facon). Le chat TEXTE passe par Tailscale Serve en HTTPS. -->
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>tail921235.ts.net</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-			</dict>
-		</dict>
+		<!-- Le canal VOIX (One -> gateway http://100.84.70.56:18789 + ws://) vise
+		     une IP tailnet (chiffree WireGuard). ATS ne permet pas d'exempter une
+		     IP par domaine -> NSAllowsArbitraryLoads SEUL (aucune cle granulaire a
+		     cote, sinon iOS 10+ l'ignore). Autorise http + ws en clair. Le chat
+		     TEXTE passe de toute facon par Tailscale Serve en HTTPS. -->
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Hermex needs Bluetooth access to connect to Meta smart glasses for the One voice assistant.</string>
