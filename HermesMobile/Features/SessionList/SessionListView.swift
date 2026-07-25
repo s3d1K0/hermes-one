@@ -18,6 +18,9 @@ struct SessionListView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    // Controller app-level du mode vocal One : permet d'ouvrir l'overlay vocal
+    // depuis l'accueil (a cote du bouton "Chat"), sans etre dans une discussion.
+    @Environment(OneSessionController.self) private var oneController
     @State private var viewModel: SessionListViewModel
     @State private var navigationState: SessionNavigationState
     @State private var sessionPendingRename: SessionSummary?
@@ -276,10 +279,13 @@ struct SessionListView: View {
             content
 
             if !isSearchingSessions {
-                newSessionButton
-                    .padding(.trailing, 24)
-                    .padding(.bottom, 22)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                HStack(spacing: 12) {
+                    oneVoiceButton
+                    newSessionButton
+                }
+                .padding(.trailing, 24)
+                .padding(.bottom, 22)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
     }
@@ -603,6 +609,35 @@ struct SessionListView: View {
                 )
             }
         }
+    }
+
+    // Bouton vocal One, a cote du bouton "Chat" : ouvre le mode vocal (overlay
+    // app-level via OneSessionController) sans passer par une discussion.
+    private var oneVoiceButton: some View {
+        HapticButton(feedbackStyle: .medium) {
+            oneController.present()
+        } label: {
+            Image(systemName: "waveform")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(newSessionButtonForegroundColor)
+                .frame(width: 58, height: 58)
+                .contentShape(Circle())
+                .background {
+                    if let fill = newSessionButtonSolidThemeFill {
+                        Circle().fill(fill)
+                    }
+                }
+                .sessionsChromeGlass(
+                    isInteractive: true,
+                    tint: newSessionButtonGlassTint,
+                    fallbackMaterial: .regularMaterial,
+                    in: Circle()
+                )
+        }
+        .buttonStyle(SessionListFloatingChatButtonStyle())
+        .disabled(viewModel.isViewingCachedData)
+        .opacity(viewModel.isViewingCachedData ? 0.45 : 1)
+        .accessibilityLabel("Parler à One")
     }
 
     private var newSessionButton: some View {
