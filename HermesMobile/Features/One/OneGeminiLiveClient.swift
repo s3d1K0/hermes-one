@@ -207,10 +207,15 @@ final class OneGeminiLiveClient {
                         ["text": OneConfig.systemInstruction]
                     ]
                 ],
+                // Le champ `tools` de Gemini Live accepte un TABLEAU d'objets : on
+                // met cote a cote l'outil natif de grounding {"googleSearch": {}}
+                // (recherche Google gratuite, ~2s, pour l'info fraiche : meteo,
+                // horaires, actu, faits) ET nos functionDeclarations (execute/time/
+                // timer/reminder). Cle wire = "googleSearch" (camelCase, v1beta REST
+                // ; l'equivalent SDK Python est `google_search`).
                 "tools": [
-                    [
-                        "functionDeclarations": OneToolDeclarations.allDeclarations()
-                    ]
+                    ["googleSearch": [:] as [String: Any]],
+                    ["functionDeclarations": OneToolDeclarations.allDeclarations()],
                 ],
                 "realtimeInputConfig": [
                     "automaticActivityDetection": [

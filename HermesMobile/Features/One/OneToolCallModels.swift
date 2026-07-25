@@ -158,7 +158,7 @@ enum OneToolDeclarations {
 
     static let execute: [String: Any] = [
         "name": "execute",
-        "description": "Your only way to take action. You have no memory, storage, or ability to do anything on your own -- use this tool for everything: sending messages, searching the web, adding to lists, setting reminders, creating notes, research, drafts, scheduling, smart home control, app interactions, or any request that goes beyond answering a question. When in doubt, use this tool.",
+        "description": "Delegue a Hermes toute tache touchant les donnees privees de Sedik ou ayant un effet de bord : envoyer un message, gerer des listes/notes durables, ses fichiers, son agenda, ses comptes, piloter la domotique, interagir avec des apps, ou toute tache multi-etapes. N'utilise PAS cet outil pour repondre a une question d'info fraiche ou de culture generale (meteo, horaires, actu, faits) : dans ce cas, sers-toi de la recherche Google integree et reponds toi-meme.",
         "parameters": [
             "type": "object",
             "properties": [
