@@ -165,10 +165,36 @@ final class OneVoiceSessionViewModel {
     /// (Re)arme le minuteur d'inactivite : apres `OneSettings.autoStandbySeconds`
     /// sans activite (transcription entrante / fin de tour), on repasse en veille.
     /// Porte depuis VisionClaw's GeminiSessionViewModel.armActiveInactivityTimer().
+    /// Vrai entre la question "tu veux autre chose ?" et la mise en veille reelle.
+    private var pendingSleepConfirm = false
+
     private func armInactivityTimer() {
         inactivityTimer?.invalidate()
+        // Toute (re)activite annule une eventuelle confirmation de veille en cours.
+        pendingSleepConfirm = false
         let secs = TimeInterval(OneSettings.autoStandbySeconds)
         inactivityTimer = Timer.scheduledTimer(withTimeInterval: secs, repeats: false) { [weak self] _ in
+            Task { @MainActor in self?.promptBeforeSleep() }
+        }
+    }
+
+    /// Avant de couper : One DEMANDE a l'utilisateur s'il veut autre chose, au
+    /// lieu de se mettre en veille sec. Sans reponse dans une courte fenetre, on
+    /// se met vraiment en veille. Toute parole (onInputTranscription ->
+    /// armInactivityTimer) reset pendingSleepConfirm et relance le cycle normal.
+    private func promptBeforeSleep() {
+        guard phase == .listening || phase == .speaking else { return }
+        if pendingSleepConfirm {
+            stop()
+            return
+        }
+        pendingSleepConfirm = true
+        client.sendText(
+            "[Instruction] Demande a l'utilisateur, en UNE phrase orale courte et naturelle, "
+            + "s'il a autre chose a te demander, sinon dis que tu vas te mettre en veille. "
+            + "Ne reponds a rien d'autre.")
+        inactivityTimer?.invalidate()
+        inactivityTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: false) { [weak self] _ in
             Task { @MainActor in self?.stop() }
         }
     }
@@ -311,7 +337,10 @@ final class OneVoiceSessionViewModel {
             phase = .error("Reveil impossible pour lire la reponse d'Hermes")
             return
         }
-        sleepAfterTurn = true
+        // On ne coupe PLUS sec apres la lecture (sleepAfterTurn retire) : One lit
+        // la reponse d'Hermes puis RESTE a l'ecoute. onTurnComplete re-arme le
+        // minuteur d'inactivite, qui demandera "tu veux autre chose ?" avant de
+        // se mettre en veille (promptBeforeSleep). L'utilisateur peut enchainer.
         // IMPORTANT : sendText envoie un tour "role: user" -> sans cadrage, Gemini
         // REPOND a la reponse d'Hermes comme si l'utilisateur l'avait dite
         // ("j'ai des choses a faire...") au lieu de la LIRE. On l'instruit donc
