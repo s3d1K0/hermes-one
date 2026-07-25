@@ -52,15 +52,14 @@
 	</dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<!-- Tout le trafic de l'app va vers les noeuds Tailscale de Sedik
-		     (chiffre WireGuard de bout en bout). Le canal VOIX (One -> gateway
-		     http://100.84.70.56:18789 + ws://) vise une IP tailnet 100.64/10 que
-		     NSAllowsLocalNetworking ne couvre pas et qu'ATS ne permet pas
-		     d'exempter par domaine (pas de nom de domaine). Le chat TEXTE, lui,
-		     passe deja par Tailscale Serve en HTTPS (certif .ts.net valide). -->
+		<!-- Le canal VOIX (One -> gateway http://100.84.70.56:18789 + ws://) vise
+		     une IP tailnet 100.64/10 (chiffree WireGuard). PIEGE iOS : combiner
+		     NSAllowsArbitraryLoads avec une cle granulaire (NSAllowsLocalNetworking)
+		     fait qu'iOS 10+ IGNORE NSAllowsArbitraryLoads et n'applique que la cle
+		     granulaire -> le ws:// vers l'IP tailnet reste bloque (erreur -1022).
+		     On garde donc UNIQUEMENT NSAllowsArbitraryLoads pour qu'il soit honore.
+		     Le chat TEXTE passe de toute facon par Tailscale Serve en HTTPS. -->
 		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
